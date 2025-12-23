@@ -1,0 +1,13 @@
+{
+    "name": "@repo/global-types",
+    "version": "0.0.0",
+    "private": true,
+    "exports": {
+        ".": "./src/index.ts",
+        "./*": "./src/*.ts"
+    },
+    "devDependencies": {
+        "@repo/typescript-config": "workspace:*",
+        "@repo/eslint-config": "workspace:*"
+    }
+}
