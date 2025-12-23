@@ -1,0 +1,20 @@
+{
+	"name": "cockpit-api",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev"
+	},
+	"devDependencies": {
+		"@repo/eslint-config": "workspace:*",
+		"@repo/typescript-config": "workspace:*",
+		"eslint": "^9.39.1",
+		"eslint-config-prettier": "^10.1.8",
+		"prettier": "^3.7.4",
+		"typescript": "^5.9.3"
+	},
+	"dependencies": {
+		"fastify": "^5.6.2"
+	}
+}
