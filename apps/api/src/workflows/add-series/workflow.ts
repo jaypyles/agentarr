@@ -7,6 +7,7 @@ import { toAiReadableSeries } from "@/utils";
 import { toAiReadableIndex } from "@/utils/to-ai-readable-index";
 import { SonarrAddOptions, SonarrSeries } from "@repo/global-types";
 import { BOLD, logger, RESET } from "@repo/logger";
+import { FastifyReply } from "fastify";
 import { Workflow } from "../workflow";
 export class AddSeriesWorkflow extends Workflow {
   private foundSeriesCache: SonarrSeries[] | undefined;
@@ -99,18 +100,44 @@ export class AddSeriesWorkflow extends Workflow {
     return response.data;
   }
 
-  public async run(args: { query: string }): Promise<any> {
+  public async run(args: { query: string }, res: FastifyReply): Promise<any> {
     const originalQuery = args.query;
+    await this.send(res, { status: "started", message: "Starting workflow" });
     const searchQuery = await this.determineSearchQueries(originalQuery);
+    await this.send(res, {
+      status: "progress",
+      message: "Determining search queries",
+    });
     const series = await this.lookupSeries(searchQuery);
+    await this.send(res, { status: "progress", message: "Looking up series" });
     const decision = await this.decideSeries(series, originalQuery);
+    await this.send(res, { status: "progress", message: "Deciding series" });
+
+    // const addedSeries = await this.addSeries(decision);
     const prowlarrSeries = await this.getProwlarrSeries(decision.title);
+    await this.send(res, {
+      status: "progress",
+      message: "Getting prowlarr series",
+    });
     const downloadedSeries = await this.downloadProwlarrSeries(
       prowlarrSeries.guid,
       prowlarrSeries.indexerId
     );
+    await this.send(res, {
+      status: "progress",
+      message: "Downloading prowlarr series",
+    });
 
-    // const addedSeries = await this.addSeries(decision);
+    console.log({ downloadedSeries });
+
+    await this.send(res, {
+      status: "end",
+      message: "Workflow ended",
+
+      data: downloadedSeries,
+    });
+
+    res.sse.close();
     return downloadedSeries;
   }
 }

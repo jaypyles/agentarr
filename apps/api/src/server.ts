@@ -1,3 +1,5 @@
+import cors from "@fastify/cors";
+import fastifySSE from "@fastify/sse";
 import { SonarrSeries } from "@repo/global-types";
 import { logger } from "@repo/logger";
 import fastify from "fastify";
@@ -9,68 +11,78 @@ import { AddSeriesWorkflow } from "./workflows/add-series";
 
 const SERIES_CACHE = new Map<string, SonarrSeries[]>();
 
-const server = fastify();
+async function start() {
+  const server = fastify();
 
-server.get("/agent/add-series", async (req, res) => {
-  const { query } = req.query as { query: string };
+  await server.register(cors, {
+    origin: "*",
+  });
 
-  const workflow = new AddSeriesWorkflow();
-  const decision = await workflow.run({ query });
+  await server.register(fastifySSE);
 
-  res.status(200).send(decision);
-});
+  server.get("/agent/add-series", { sse: true }, async (req, res) => {
+    const { query } = req.query as { query: string };
 
-server.get("/sonarr/lookup", async (req, res) => {
-  const { query } = req.query as { query: string };
+    const workflow = new AddSeriesWorkflow();
+    await workflow.run({ query }, res);
+  });
 
-  let series = SERIES_CACHE.get(query);
+  server.get("/sonarr/get-series", async (req, res) => {
+    const series = await sonarrService.getSeries();
+    res.status(200).send(series);
+  });
 
-  if (!series) {
-    series = await sonarrService.lookup(query);
-    SERIES_CACHE.set(query, series);
-  }
+  server.get("/sonarr/lookup", async (req, res) => {
+    const { query } = req.query as { query: string };
 
-  res.status(200).send(series);
-});
+    let series = SERIES_CACHE.get(query);
 
-server.post("/sonarr/decide-series", async (req, res) => {
-  const { series, originalQuery } = req.body as {
-    series: Partial<SonarrSeries>[];
-    originalQuery: string;
-  };
+    if (!series) {
+      series = await sonarrService.lookup(query);
+      SERIES_CACHE.set(query, series);
+    }
 
-  const decision = await new DecideSeriesAgent().run(
-    JSON.stringify({
-      series: series.splice(0, 10).map((s) => toAiReadableSeries(s)),
-      originalQuery: originalQuery,
-    })
-  );
+    res.status(200).send(series);
+  });
 
-  res.status(200).send(decision);
-});
+  server.post("/sonarr/decide-series", async (req, res) => {
+    const { series, originalQuery } = req.body as {
+      series: Partial<SonarrSeries>[];
+      originalQuery: string;
+    };
 
-server.get("/prowlarr/search", async (req, res) => {
-  const { query } = req.query as {
-    query: string;
-  };
+    const decision = await new DecideSeriesAgent().run(
+      JSON.stringify({
+        series: series.splice(0, 10).map((s) => toAiReadableSeries(s)),
+        originalQuery: originalQuery,
+      })
+    );
 
-  const results = await prowlarrService.search(query);
+    res.status(200).send(decision);
+  });
 
-  res.status(200).send(results);
-});
+  server.get("/prowlarr/search", async (req, res) => {
+    const { query } = req.query as {
+      query: string;
+    };
 
-server.listen({ port: 3000 }, (err, address) => {
-  if (err) {
-    console.error(err);
-    process.exit(1);
-  }
+    const results = await prowlarrService.search(query);
 
-  logger.info(`Server is running on ${address}`);
-});
+    res.status(200).send(results);
+  });
 
-server.addHook("onResponse", (req, res, done) => {
-  const { method, url } = req;
-  logger.info(`[${res.statusCode}] - ${method} ${url}`);
+  server.addHook("onResponse", (req, res, done) => {
+    const { method, url } = req;
+    logger.info(`[${res.statusCode}] - ${method} ${url}`);
 
-  done();
+    done();
+  });
+
+  await server.listen({ port: 3000 });
+  logger.info(`Server is running on http://127.0.0.1:3000`);
+}
+
+start().catch((err) => {
+  console.error(err);
+  process.exit(1);
 });

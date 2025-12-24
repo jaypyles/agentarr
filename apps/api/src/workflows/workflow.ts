@@ -1,3 +1,5 @@
+import { FastifyReply } from "fastify";
+
 export type Step = {
   name: string;
   description: string;
@@ -14,5 +16,9 @@ export abstract class Workflow {
     this.name = name;
   }
 
-  abstract run(args: any): Promise<any>;
+  protected async send(res: FastifyReply, data: any) {
+    await res.sse.send({ data });
+  }
+
+  abstract run(args: any, res: FastifyReply): Promise<any>;
 }

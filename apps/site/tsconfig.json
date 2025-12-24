@@ -10,7 +10,13 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"strict": true,
-		"moduleResolution": "bundler"
+		"moduleResolution": "bundler",
+		"baseUrl": ".",
+		"paths": {
+			"$*": ["src/*"],
+			"@repo/global-types": ["../../packages/global-types/src/index.ts"],
+			"@repo/global-types/*": ["../../packages/global-types/src/*"]
+		}
 	}
 	// Path aliases are handled by https://svelte.dev/docs/kit/configuration#alias
 	// except $lib which is handled by https://svelte.dev/docs/kit/configuration#files
