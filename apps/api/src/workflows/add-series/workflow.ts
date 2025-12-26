@@ -58,6 +58,8 @@ export class AddSeriesWorkflow extends Workflow {
   }
 
   private async lookupSeries(searchQuery: string): Promise<any> {
+    logger.info(`Looking up series for "${searchQuery}" in Sonarr`);
+
     const series = await sonarrService.lookup(searchQuery);
     this.foundSeriesCache = series;
     return series;
@@ -102,6 +104,8 @@ export class AddSeriesWorkflow extends Workflow {
     episodes: number[],
     res: FastifyReply
   ): Promise<any> {
+    logger.info("User is looking for specific episodes.");
+
     for (const episode of episodes) {
       await this.getAndAddToProwlarr(
         `${series.title ?? ""} S${season < 10 ? "0" : ""}${season}E${episode < 10 ? "0" : ""}${episode}`,
@@ -114,23 +118,24 @@ export class AddSeriesWorkflow extends Workflow {
     searchTerm: string,
     res: FastifyReply
   ): Promise<any> {
+    logger.info(`User is searching for "${searchTerm}" in Prowlarr`);
     await this.send(res, {
       status: "progress",
       message: `Searching prowlarr for "${searchTerm}"`,
     });
-    logger.info(`Searching prowlarr for "${searchTerm}"`);
+
     const prowlarrSeries = await this.getProwlarrSeries(searchTerm);
 
+    logger.info(`Adding "${prowlarrSeries.title}" to download client`);
     await this.send(res, {
       status: "progress",
       message: `Adding "${prowlarrSeries.title}" to download client`,
     });
-    logger.info(`Adding "${prowlarrSeries.title}" to download client`);
+
     const downloadedSeries = await this.downloadProwlarrSeries(
       prowlarrSeries.guid,
       prowlarrSeries.indexerId
     );
-
     return downloadedSeries;
   }
 
@@ -189,9 +194,8 @@ export class AddSeriesWorkflow extends Workflow {
             "User already has series in their library, not adding to Sonarr.",
         });
       } else {
-        logger.info(
-          "User does not have series in their library, adding to Sonarr."
-        );
+        // User does not have series in their library, looking up series in Sonarr
+
         await this.send(res, {
           status: "progress",
           message: "Looking up series",
@@ -209,7 +213,6 @@ export class AddSeriesWorkflow extends Workflow {
       }
 
       if (searchQuery.episodes) {
-        logger.info("User is looking for specific episodes.");
         await this.addEpisodes(
           searchQuery.title,
           searchQuery.season,
@@ -217,7 +220,6 @@ export class AddSeriesWorkflow extends Workflow {
           res
         );
       } else {
-        logger.info("User is looking for a full season.");
         await this.getAndAddToProwlarr(decision, res);
       }
 
