@@ -16,11 +16,11 @@
 		"test": "npm run test:unit -- --run"
 	},
 	"devDependencies": {
-		"@repo/global-types": "workspace:*",
 		"@eslint/compat": "^1.4.0",
 		"@eslint/js": "^9.39.1",
 		"@internationalized/date": "^3.10.0",
 		"@lucide/svelte": "^0.561.0",
+		"@repo/global-types": "workspace:*",
 		"@sveltejs/adapter-node": "^5.4.0",
 		"@sveltejs/kit": "^2.49.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
@@ -52,6 +52,7 @@
 		"vitest-browser-svelte": "^2.0.1"
 	},
 	"dependencies": {
+		"@iconify/tailwind4": "^1.2.0",
 		"axios": "^1.13.2",
 		"shadcn-svelte": "^1.1.0"
 	}

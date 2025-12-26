@@ -9,6 +9,7 @@ import { SonarrAddOptions, SonarrSeries } from "@repo/global-types";
 import { BOLD, logger, RESET } from "@repo/logger";
 import { FastifyReply } from "fastify";
 import { Workflow } from "../workflow";
+
 export class AddSeriesWorkflow extends Workflow {
   private foundSeriesCache: SonarrSeries[] | undefined;
 
@@ -16,20 +17,44 @@ export class AddSeriesWorkflow extends Workflow {
     super("Add Series Workflow");
   }
 
+  private async checkSeries() {
+    const series = await sonarrService.getSeries();
+
+    let userSeries = "";
+
+    for (const s of series) {
+      userSeries += `${s.title}\n ${s.seasons?.map((season) => (season.seasonNumber ? `Season: ${season.seasonNumber} - ${season.statistics?.episodeFileCount} episodes / ${season.statistics?.totalEpisodeCount} total episodes` : "")).join("\n")}\n`;
+    }
+
+    return userSeries;
+  }
+
   private async determineSearchQueries(query: string): Promise<any> {
+    const userSeries = await this.checkSeries();
+
+    const userQuery = `
+    <user-series>
+    ${userSeries ?? "No series found"}
+    </user-series>
+
+    ${query}
+    `;
+
     const response = await new DetermineSearchQueriesAgent().run<{
       searchQuery: string;
+      season?: number;
+      episodes?: number[];
+      alreadyInLibrary?: boolean;
     }>(
       JSON.stringify({
-        query,
+        query: userQuery,
       })
     );
 
-    logger.info(
-      `${BOLD}[AI] - Generated search query: ${RESET}${response.searchQuery}`
-    );
+    const log = `${BOLD}[AI] - Generated search query: ${RESET}${response.searchQuery} ${response.season ? `S${response.season < 10 ? "0" : ""}${response.season}` : ""} ${response.episodes ? `E${response.episodes.map((e) => (e < 10 ? "0" : "")).join(",")}` : ""}`;
+    logger.info(log);
 
-    return response.searchQuery;
+    return response;
   }
 
   private async lookupSeries(searchQuery: string): Promise<any> {
@@ -56,11 +81,8 @@ export class AddSeriesWorkflow extends Workflow {
     options?: SonarrAddOptions
   ): Promise<any> {
     const foundSeries = this.foundSeriesCache?.find((s) => {
-      console.log(s.tvdbId, series.tvdbId);
       return s.tvdbId === series.tvdbId;
     });
-
-    console.log({ foundSeries });
 
     if (!foundSeries) {
       throw new Error("Series not found");
@@ -72,6 +94,44 @@ export class AddSeriesWorkflow extends Workflow {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  private async addEpisodes(
+    series: SonarrSeries,
+    season: number,
+    episodes: number[],
+    res: FastifyReply
+  ): Promise<any> {
+    for (const episode of episodes) {
+      await this.getAndAddToProwlarr(
+        `${series.title ?? ""} S${season < 10 ? "0" : ""}${season}E${episode < 10 ? "0" : ""}${episode}`,
+        res
+      );
+    }
+  }
+
+  private async getAndAddToProwlarr(
+    searchTerm: string,
+    res: FastifyReply
+  ): Promise<any> {
+    await this.send(res, {
+      status: "progress",
+      message: `Searching prowlarr for "${searchTerm}"`,
+    });
+    logger.info(`Searching prowlarr for "${searchTerm}"`);
+    const prowlarrSeries = await this.getProwlarrSeries(searchTerm);
+
+    await this.send(res, {
+      status: "progress",
+      message: `Adding "${prowlarrSeries.title}" to download client`,
+    });
+    logger.info(`Adding "${prowlarrSeries.title}" to download client`);
+    const downloadedSeries = await this.downloadProwlarrSeries(
+      prowlarrSeries.guid,
+      prowlarrSeries.indexerId
+    );
+
+    return downloadedSeries;
   }
 
   private async getProwlarrSeries(title: string): Promise<any> {
@@ -96,48 +156,93 @@ export class AddSeriesWorkflow extends Workflow {
     guid: string,
     indexerId: number
   ): Promise<any> {
-    const response = await prowlarrService.download(guid, indexerId);
-    return response.data;
+    // const response = await prowlarrService.download(guid, indexerId);
+    // return response.data;
   }
 
   public async run(args: { query: string }, res: FastifyReply): Promise<any> {
-    const originalQuery = args.query;
     await this.send(res, { status: "started", message: "Starting workflow" });
-    const searchQuery = await this.determineSearchQueries(originalQuery);
-    await this.send(res, {
-      status: "progress",
-      message: "Determining search queries",
-    });
-    const series = await this.lookupSeries(searchQuery);
-    await this.send(res, { status: "progress", message: "Looking up series" });
-    const decision = await this.decideSeries(series, originalQuery);
-    await this.send(res, { status: "progress", message: "Deciding series" });
 
-    // const addedSeries = await this.addSeries(decision);
-    const prowlarrSeries = await this.getProwlarrSeries(decision.title);
-    await this.send(res, {
-      status: "progress",
-      message: "Getting prowlarr series",
-    });
-    const downloadedSeries = await this.downloadProwlarrSeries(
-      prowlarrSeries.guid,
-      prowlarrSeries.indexerId
-    );
-    await this.send(res, {
-      status: "progress",
-      message: "Downloading prowlarr series",
-    });
+    let decision: SonarrSeries | string | undefined;
+    const originalQuery = args.query;
 
-    console.log({ downloadedSeries });
+    try {
+      await this.send(res, {
+        status: "progress",
+        message: "Determining search queries",
+      });
+      const searchQuery = await this.determineSearchQueries(originalQuery);
 
-    await this.send(res, {
-      status: "end",
-      message: "Workflow ended",
+      const seasonPart = searchQuery.season
+        ? ` S${searchQuery.season < 10 ? "0" : ""}${searchQuery.season}`
+        : "";
+      decision = `${searchQuery.searchQuery} ${seasonPart}`;
 
-      data: downloadedSeries,
-    });
+      if (searchQuery.alreadyInLibrary) {
+        logger.info(
+          "User already has series in their library, not adding to Sonarr."
+        );
 
-    res.sse.close();
-    return downloadedSeries;
+        await this.send(res, {
+          status: "info",
+          message:
+            "User already has series in their library, not adding to Sonarr.",
+        });
+      } else {
+        logger.info(
+          "User does not have series in their library, adding to Sonarr."
+        );
+        await this.send(res, {
+          status: "progress",
+          message: "Looking up series",
+        });
+
+        const series = await this.lookupSeries(searchQuery.searchQuery);
+
+        await this.send(res, {
+          status: "progress",
+          message: "Deciding series",
+        });
+        const decidedSeries = await this.decideSeries(series, originalQuery);
+
+        // const addedSeries = await this.addSeries(decision);
+      }
+
+      if (searchQuery.episodes) {
+        logger.info("User is looking for specific episodes.");
+        await this.addEpisodes(
+          searchQuery.title,
+          searchQuery.season,
+          searchQuery.episodes,
+          res
+        );
+      } else {
+        logger.info("User is looking for a full season.");
+        await this.getAndAddToProwlarr(decision, res);
+      }
+
+      await this.send(res, {
+        status: "end",
+        message: "Workflow ended",
+      });
+
+      res.sseContext.source.end();
+    } catch (error) {
+      logger.error({ err: error }, "Workflow error");
+      try {
+        await this.send(res, {
+          status: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        });
+        res.sseContext.source.end();
+      } catch (sendError) {
+        // If we can't send the error, the connection is likely already closed
+        logger.error({ err: sendError }, "Failed to send error response");
+      }
+      throw error;
+    }
   }
 }

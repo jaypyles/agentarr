@@ -17,7 +17,11 @@ export abstract class Workflow {
   }
 
   protected async send(res: FastifyReply, data: any) {
-    await res.sse.send({ data });
+    if (!res.sse) {
+      throw new Error("SSE is not initialized.");
+    }
+
+    await res.sse({ data: JSON.stringify(data)});
   }
 
   abstract run(args: any, res: FastifyReply): Promise<any>;

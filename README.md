@@ -13,3 +13,10 @@ Sonarr -> returns options
 AI -> decides sonarr option for add to sonarr
 APP -> adds sonarr series to sonarr
 
+
+Situations:
+
+User doesn't have any episodes of any series and no Sonarr series 
+User doesn't have any episodes of any series, but has Sonarr series
+User has some episodes of series
+User has some seasons 

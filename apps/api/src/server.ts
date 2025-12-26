@@ -1,5 +1,5 @@
 import cors from "@fastify/cors";
-import fastifySSE from "@fastify/sse";
+import { FastifySSEPlugin } from "fastify-sse-v2"
 import { SonarrSeries } from "@repo/global-types";
 import { logger } from "@repo/logger";
 import fastify from "fastify";
@@ -18,9 +18,9 @@ async function start() {
     origin: "*",
   });
 
-  await server.register(fastifySSE);
+  await server.register(FastifySSEPlugin);
 
-  server.get("/agent/add-series", { sse: true }, async (req, res) => {
+  server.get("/agent/add-series", async (req, res) => {
     const { query } = req.query as { query: string };
 
     const workflow = new AddSeriesWorkflow();
