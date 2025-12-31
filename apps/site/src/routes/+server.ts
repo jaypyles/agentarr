@@ -2,9 +2,14 @@ import { api } from '$lib/api';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
+	const promises = [
+		api.get('/sonarr/get-series', { headers: { 'Cache-Control': '3600' } }).then((res) => res.data),
+		api.get('/radarr/get-movies', { headers: { 'Cache-Control': '3600' } }).then((res) => res.data)
+	];
+
 	try {
-		const series = await api.get('/sonarr/get-series').then((res) => res.data);
-		return new Response(JSON.stringify(series), {
+		const [series, movies] = await Promise.all(promises);
+		return new Response(JSON.stringify({ series, movies }), {
 			status: 200,
 			headers: { 'Content-Type': 'application/json' }
 		});

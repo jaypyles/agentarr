@@ -1,9 +1,10 @@
 <script lang="ts">
 	import Agents from '$components/common/Agents.svelte';
+	import MovieCard from '$components/common/MovieCard.svelte';
 	import SeriesCard from '$components/common/SeriesCard.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar';
-	import type { SonarrSeries } from '@repo/global-types';
-	let { series }: { series: SonarrSeries[] } = $props();
+	import type { Movie, SonarrSeries } from '@repo/global-types';
+	let { series, movies }: { series: SonarrSeries[], movies: Movie[] } = $props();
 	let active = $state('series');
 
 	const changeActive = (type: string) => {
@@ -15,7 +16,7 @@
 	<Sidebar.Provider class="w-[unset]">
 		<Sidebar.Root>
 			<Sidebar.Header class="mb-4 text-2xl font-bold">
-				<div class="flex items-center gap-2 ml-2 mt-2">
+				<div class="mt-2 ml-2 flex items-center gap-2">
 					<img src="/images/cockpit-logo.png" alt="Cockpit" class="h-8 w-8" />
 					<p>COCKPIT</p>
 				</div>
@@ -36,6 +37,18 @@
 						<p>Series</p>
 					</button>
 					<button
+						class={`mx-4 flex cursor-pointer items-center gap-2 rounded-md bg-none p-2 hover:bg-muted-foreground/10 ${active === 'movies' ? 'bg-muted-foreground/10' : ''}`}
+						onclick={() => changeActive('movies')}
+					>
+						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+							><path
+								fill="currentColor"
+								d="m4 4l2 4h3L7 4h2l2 4h3l-2-4h2l2 4h3l-2-4h3q.825 0 1.413.588T22 6v12q0 .825-.587 1.413T20 20H4q-.825 0-1.412-.587T2 18V6q0-.825.588-1.412T4 4"
+							/></svg
+						>
+						<p>Movies</p>
+					</button>
+					<button
 						class={`mx-4 flex cursor-pointer items-center gap-2 rounded-md bg-none p-2 hover:bg-muted-foreground/10 ${active === 'agents' ? 'bg-muted-foreground/10' : ''}`}
 						onclick={() => changeActive('agents')}
 					>
@@ -53,12 +66,28 @@
 		</Sidebar.Root>
 	</Sidebar.Provider>
 
-	<main class="flex w-full flex-col gap-2 bg-zinc-900 p-4 text-white">
+	<main class="flex h-full w-full flex-col gap-2 bg-zinc-900 p-4 text-white">
 		{#if active === 'series'}
-			<div class="grid flex-1 grid-cols-6 gap-2 overflow-auto bg-card dark:bg-card/50 border border-border dark:border-border/50 rounded-md p-4">
-				{#each series as s}
-					<SeriesCard series={s} />
-				{/each}
+			<div
+				class="h-full rounded-md border border-border bg-card dark:border-border/50 dark:bg-card/50"
+			>
+				<div class="grid grid-cols-6 gap-4 overflow-auto p-4">
+					{#each series as s}
+						<SeriesCard series={s} />
+					{/each}
+				</div>
+			</div>
+		{/if}
+
+		{#if active === 'movies'}
+			<div
+				class="h-full rounded-md border border-border bg-card dark:border-border/50 dark:bg-card/50"
+			>
+				<div class="grid grid-cols-6 gap-4 overflow-auto p-4">
+					{#each movies as m}
+						<MovieCard movie={m} />
+					{/each}
+				</div>
 			</div>
 		{/if}
 

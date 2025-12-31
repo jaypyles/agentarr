@@ -18,8 +18,15 @@ export const prowlarrApi = axios.create({
 });
 
 export const radarrApi = axios.create({
-  baseURL: process.env.RADARR_URL || "",
+  baseURL: `${process.env.RADARR_URL}/api/v3`,
   headers: {
     "X-Api-Key": process.env.RADARR_API_KEY || "",
+  },
+});
+
+export const jellyfinApi = axios.create({
+  baseURL: process.env.JELLYFIN_URL || "",
+  headers: {
+    Authorization: `MediaBrowser Client="MediaBrowser Client", Device="super-cool-device", DeviceId="super-cool-device-id", Token="${process.env.JELLYFIN_API_KEY || ""}"`,
   },
 });
