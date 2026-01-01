@@ -34,7 +34,7 @@ async function start() {
     const { query } = req.query as { query: string };
 
     const workflow = new AddMovieWorkflow(res);
-    await workflow.run({ query }, res);
+    await workflow.run({ query });
   });
 
   server.get("/apps", async (req, res) => {

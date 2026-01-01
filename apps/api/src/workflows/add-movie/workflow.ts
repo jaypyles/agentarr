@@ -164,41 +164,64 @@ export class AddMovieWorkflow extends Workflow {
     return response.data;
   }
 
-  public async run(args: { query: string }, res: FastifyReply): Promise<any> {
-    await this.send(res, { status: "started", message: "Starting workflow" });
+  public async run(args: { query: string }): Promise<any> {
+    try {
+      await this.send(this.res, {
+        status: "started",
+        message: "Starting workflow",
+      });
 
-    const queryResponse = await this.determineSearchQueries(args.query);
-    const searchResults = await this.searchForMovie(queryResponse.searchQuery);
-    const movieDecision = await this.decideMovie(searchResults, args.query);
-    const movieInLibrary = await this.checkIfMovieInLibrary(movieDecision);
+      const queryResponse = await this.determineSearchQueries(args.query);
+      const searchResults = await this.searchForMovie(
+        queryResponse.searchQuery
+      );
+      const movieDecision = await this.decideMovie(searchResults, args.query);
+      const movieInLibrary = await this.checkIfMovieInLibrary(movieDecision);
 
-    if (movieInLibrary) {
-      logger.info("Movie already in library, not adding to Radarr.");
-    } else {
-      // Movie is not in library, adding to Radarr
-      await radarrService.addMovie(movieDecision);
-      console.log("Movie added to Radarr");
+      if (movieInLibrary) {
+        logger.info("Movie already in library, not adding to Radarr.");
+      } else {
+        // Movie is not in library, adding to Radarr
+        await radarrService.addMovie(movieDecision);
+        logger.info("Movie added to Radarr");
+      }
+
+      const prowlarrMovies = await this.searchForMovieInProwlarr(
+        queryResponse.searchQuery
+      );
+      const prowlarrMovieDecision = await this.decideMovieInProwlarr(
+        prowlarrMovies,
+        args.query
+      );
+
+      await this.addMovieToProwlarr(
+        prowlarrMovieDecision.title,
+        prowlarrMovieDecision.guid,
+        prowlarrMovieDecision.indexerId
+      );
+
+      await this.send(this.res, {
+        status: "end",
+        message: "Workflow ended",
+      });
+
+      this.res.sseContext.source.end();
+    } catch (error) {
+      logger.error({ err: error }, "Workflow error");
+      try {
+        await this.send(this.res, {
+          status: "error",
+          message:
+            error instanceof Error
+              ? error.message
+              : "An unknown error occurred",
+        });
+        this.res.sseContext.source.end();
+      } catch (sendError) {
+        // If we can't send the error, the connection is likely already closed
+        logger.error({ err: sendError }, "Failed to send error response");
+      }
+      throw error;
     }
-
-    const prowlarrMovies = await this.searchForMovieInProwlarr(
-      queryResponse.searchQuery
-    );
-    const prowlarrMovieDecision = await this.decideMovieInProwlarr(
-      prowlarrMovies,
-      args.query
-    );
-
-    await this.addMovieToProwlarr(
-      prowlarrMovieDecision.title,
-      prowlarrMovieDecision.guid,
-      prowlarrMovieDecision.indexerId
-    );
-
-    await this.send(this.res, {
-      status: "end",
-      message: "Workflow ended",
-    });
-
-    this.res.sseContext.source.end();
   }
 }
