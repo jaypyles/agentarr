@@ -43,7 +43,7 @@ export interface Movie {
   keywords: string[];
   tags: number[];
   added: string;
-  addOptions: AddOptions;
+  addOptions: MovieAddOptions;
   ratings: Ratings;
   movieFile: MovieFile;
   collection: Collection;
@@ -71,7 +71,7 @@ export interface Image {
   remoteUrl: string;
 }
 
-export interface AddOptions {
+export interface MovieAddOptions {
   ignoreEpisodesWithFiles: boolean;
   ignoreEpisodesWithoutFiles: boolean;
   monitor: string;

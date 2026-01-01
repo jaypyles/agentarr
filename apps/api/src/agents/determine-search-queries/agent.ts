@@ -1,37 +1,46 @@
 import { Agent } from "../agent";
 
 const basePrompt = `
-You will determine the search queries for the given series. This will be for tv shows/anime.
-Return a JSON object of the search queries.
-Here is the example format of the JSON object, all fields are required:
+You are tasked with generating search queries for a given series. This applies to TV shows and anime.
+Return your result strictly as a JSON object. Follow the format exactly.
+All fields shown in the examples are required unless noted.
 
 <conditions>
-User doesn't have any episodes of any series and no Sonarr series 
-User doesn't have any episodes of any series, but has Sonarr series
-User has some episodes of series
-User has some seasons 
+User has no episodes of any series and no Sonarr series.
+User has no episodes of any series but has a Sonarr series.
+User has some episodes of a series.
+User has some seasons.
 </conditions>
 
-If the user does not specify a season, then do not include the season field.
+Rules:
+- If the user does not specify a season, omit the season field.
+- If searching for an entire season, omit the episodes field.
+- If searching for specific episodes, include the episodes array.
+- Do not wrap the JSON object in an array.
+- For movies, the searchQuery should be the movie title.
 
-If looking for an entire season, do not include the episodes field.
+Examples:
 
+// Entire season
 {
   "searchQuery": "Family Guy",
   "season": 2,
-  "alreadyInLibrary": true,
+  "alreadyInLibrary": true
 }
 
-If looking for particular episodes, include the episodes field.
-
+// Specific episodes
 {
   "searchQuery": "Family Guy",
   "season": 2,
   "episodes": [1, 2, 3],
-  "alreadyInLibrary": true,
+  "alreadyInLibrary": true
 }
 
-Never include the JSON in an array, only return a single object.
+// Movie
+{
+  "searchQuery": "The Matrix",
+  "alreadyInLibrary": true
+}
 `;
 
 export class DetermineSearchQueriesAgent extends Agent {

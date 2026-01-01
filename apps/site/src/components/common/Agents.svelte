@@ -3,8 +3,11 @@
 
 	const log = $state<any[]>([]);
 	let query = $state('');
-
 	let source: EventSource | null = null;
+	let activeAgent = $state<string>('series');
+	const setActiveAgent = (agent: string) => {
+		activeAgent = agent;
+	}
 
 	const handleAgentInput = () => {
 		// Clear previous logs
@@ -14,7 +17,7 @@
 		source?.close();
 
 		source = new EventSource(
-			`${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/agent/add-series?query=` +
+			`${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/agent/add-${activeAgent}?query=` +
 				encodeURIComponent(query)
 		);
 
@@ -45,10 +48,6 @@
 		}
 	};
 
-	let activeAgent = $state<string>('series');
-	const setActiveAgent = (agent: string) => {
-		activeAgent = agent;
-	}
 
 	const agents = [
 		{

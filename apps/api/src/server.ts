@@ -9,6 +9,7 @@ import { prowlarrService } from "./services/prowlarr";
 import { radarrService } from "./services/radarr/service";
 import { sonarrService } from "./services/sonarr";
 import { toAiReadableSeries } from "./utils";
+import { AddMovieWorkflow } from "./workflows/add-movie";
 import { AddSeriesWorkflow } from "./workflows/add-series";
 
 const SERIES_CACHE = new Map<string, SonarrSeries[]>();
@@ -25,7 +26,14 @@ async function start() {
   server.get("/agent/add-series", async (req, res) => {
     const { query } = req.query as { query: string };
 
-    const workflow = new AddSeriesWorkflow();
+    const workflow = new AddSeriesWorkflow(res);
+    await workflow.run({ query });
+  });
+
+  server.get("/agent/add-movie", async (req, res) => {
+    const { query } = req.query as { query: string };
+
+    const workflow = new AddMovieWorkflow(res);
     await workflow.run({ query }, res);
   });
 

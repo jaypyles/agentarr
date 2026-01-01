@@ -11,10 +11,12 @@ import { FastifyReply } from "fastify";
 import { Workflow } from "../workflow";
 
 export class AddSeriesWorkflow extends Workflow {
+  res: FastifyReply;
   private foundSeriesCache: SonarrSeries[] | undefined;
 
-  constructor() {
+  constructor(res: FastifyReply) {
     super("Add Series Workflow");
+    this.res = res;
   }
 
   private async checkSeries() {
@@ -51,14 +53,26 @@ export class AddSeriesWorkflow extends Workflow {
       })
     );
 
-    const log = `${BOLD}[AI] - Generated search query: ${RESET}${response.searchQuery} ${response.season ? `S${response.season < 10 ? "0" : ""}${response.season}` : ""} ${response.episodes ? `E${response.episodes.map((e) => (e < 10 ? "0" : "")).join(",")}` : ""}`;
+    const searchQuery = `${response.searchQuery} ${response.season ? `S${response.season < 10 ? "0" : ""}${response.season}` : ""} ${response.episodes ? `E${response.episodes.map((e) => (e < 10 ? "0" : "")).join(",")}` : ""}`;
+
+    const log = `${BOLD}[AI] - Generated search query: ${RESET}${searchQuery}`;
     logger.info(log);
+
+    this.send(this.res, {
+      status: "progress",
+      message: "Generated search query: " + `"${searchQuery}"`,
+    });
 
     return response;
   }
 
   private async lookupSeries(searchQuery: string): Promise<any> {
     logger.info(`Looking up series for "${searchQuery}" in Sonarr`);
+
+    this.send(this.res, {
+      status: "progress",
+      message: "Looking up series for " + `"${searchQuery}"`,
+    });
 
     const series = await sonarrService.lookup(searchQuery);
     this.foundSeriesCache = series;
@@ -75,6 +89,12 @@ export class AddSeriesWorkflow extends Workflow {
         originalQuery: originalQuery,
       })
     );
+
+    this.send(this.res, {
+      status: "progress",
+      message: "Decided on series: " + `"${decision.title}"`,
+    });
+
     return decision;
   }
 
@@ -92,6 +112,12 @@ export class AddSeriesWorkflow extends Workflow {
 
     try {
       const response = await sonarrService.addSeries(foundSeries, options);
+
+      this.send(this.res, {
+        status: "progress",
+        message: "Series added to Sonarr: " + `"${foundSeries.title}"`,
+      });
+
       return response;
     } catch (error) {
       console.error(error);
@@ -101,25 +127,21 @@ export class AddSeriesWorkflow extends Workflow {
   private async addEpisodes(
     series: SonarrSeries,
     season: number,
-    episodes: number[],
-    res: FastifyReply
+    episodes: number[]
   ): Promise<any> {
     logger.info("User is looking for specific episodes.");
 
     for (const episode of episodes) {
       await this.getAndAddToProwlarr(
-        `${series.title ?? ""} S${season < 10 ? "0" : ""}${season}E${episode < 10 ? "0" : ""}${episode}`,
-        res
+        `${series.title ?? ""} S${season < 10 ? "0" : ""}${season}E${episode < 10 ? "0" : ""}${episode}`
       );
     }
   }
 
-  private async getAndAddToProwlarr(
-    searchTerm: string,
-    res: FastifyReply
-  ): Promise<any> {
+  private async getAndAddToProwlarr(searchTerm: string): Promise<any> {
     logger.info(`User is searching for "${searchTerm}" in Prowlarr`);
-    await this.send(res, {
+
+    await this.send(this.res, {
       status: "progress",
       message: `Searching prowlarr for "${searchTerm}"`,
     });
@@ -127,7 +149,8 @@ export class AddSeriesWorkflow extends Workflow {
     const prowlarrSeries = await this.getProwlarrSeries(searchTerm);
 
     logger.info(`Adding "${prowlarrSeries.title}" to download client`);
-    await this.send(res, {
+
+    await this.send(this.res, {
       status: "progress",
       message: `Adding "${prowlarrSeries.title}" to download client`,
     });
@@ -161,21 +184,17 @@ export class AddSeriesWorkflow extends Workflow {
     guid: string,
     indexerId: number
   ): Promise<any> {
-    // const response = await prowlarrService.download(guid, indexerId);
-    // return response.data;
+    const response = await prowlarrService.download(guid, indexerId);
+    return response.data;
   }
 
-  public async run(args: { query: string }, res: FastifyReply): Promise<any> {
-    await this.send(res, { status: "started", message: "Starting workflow" });
+  public async run(args: { query: string }): Promise<any> {
+    await this.send(this.res, { status: "started", message: "Starting workflow" });
 
     let decision: SonarrSeries | string | undefined;
     const originalQuery = args.query;
 
     try {
-      await this.send(res, {
-        status: "progress",
-        message: "Determining search queries",
-      });
       const searchQuery = await this.determineSearchQueries(originalQuery);
 
       const seasonPart = searchQuery.season
@@ -188,58 +207,45 @@ export class AddSeriesWorkflow extends Workflow {
           "User already has series in their library, not adding to Sonarr."
         );
 
-        await this.send(res, {
+        await this.send(this.res, {
           status: "info",
           message:
             "User already has series in their library, not adding to Sonarr.",
         });
       } else {
         // User does not have series in their library, looking up series in Sonarr
-
-        await this.send(res, {
-          status: "progress",
-          message: "Looking up series",
-        });
-
         const series = await this.lookupSeries(searchQuery.searchQuery);
-
-        await this.send(res, {
-          status: "progress",
-          message: "Deciding series",
-        });
         const decidedSeries = await this.decideSeries(series, originalQuery);
-
-        // const addedSeries = await this.addSeries(decision);
+        await this.addSeries(decidedSeries);
       }
 
       if (searchQuery.episodes) {
         await this.addEpisodes(
           searchQuery.title,
           searchQuery.season,
-          searchQuery.episodes,
-          res
+          searchQuery.episodes
         );
       } else {
-        await this.getAndAddToProwlarr(decision, res);
+        await this.getAndAddToProwlarr(decision);
       }
 
-      await this.send(res, {
+      await this.send(this.res, {
         status: "end",
         message: "Workflow ended",
       });
 
-      res.sseContext.source.end();
+      this.res.sseContext.source.end();
     } catch (error) {
       logger.error({ err: error }, "Workflow error");
       try {
-        await this.send(res, {
+        await this.send(this.res, {
           status: "error",
           message:
             error instanceof Error
               ? error.message
               : "An unknown error occurred",
         });
-        res.sseContext.source.end();
+        this.res.sseContext.source.end();
       } catch (sendError) {
         // If we can't send the error, the connection is likely already closed
         logger.error({ err: sendError }, "Failed to send error response");
