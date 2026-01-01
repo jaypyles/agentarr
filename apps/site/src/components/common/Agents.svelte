@@ -4,10 +4,28 @@
 	const log = $state<any[]>([]);
 	let query = $state('');
 	let source: EventSource | null = null;
+
+	const urlParams = $derived(new URLSearchParams(window.location.search));
+	const isManagement = $derived(urlParams.get('option') === 'management');
+	const fileName = $derived(urlParams.get('fileName') || '');
+
 	let activeAgent = $state<string>('series');
 	const setActiveAgent = (agent: string) => {
 		activeAgent = agent;
-	}
+	};
+
+	const getAgentUrl = (agent: string) => {
+		const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+
+		switch (agent) {
+			case 'series':
+				return `${apiUrl}/agent/add-series?query=`;
+			case 'movie':
+				return `${apiUrl}/agent/add-movie?query=`;
+			case 'management':
+				return `${apiUrl}/agent/move-files?query=`;
+		}
+	};
 
 	const handleAgentInput = () => {
 		// Clear previous logs
@@ -17,7 +35,7 @@
 		source?.close();
 
 		source = new EventSource(
-			`${import.meta.env.VITE_API_URL ?? 'http://localhost:3000'}/agent/add-${activeAgent}?query=` +
+			`${getAgentUrl(activeAgent)}` +
 				encodeURIComponent(query)
 		);
 
@@ -48,28 +66,54 @@
 		}
 	};
 
-
 	const agents = [
 		{
 			name: 'Series Agent',
 			example: 'Add Family Guy to my library or add my next missing season of The Office',
 			key: 'series',
-			description: 'Agent for adding tv series',
+			description: 'Agent for adding tv series'
 		},
 		{
 			name: 'Movie Agent',
 			example: 'Add The Matrix to my library',
 			key: 'movie',
-			description: 'Agent for adding movies',
+			description: 'Agent for adding movies'
 		},
-	]
+		{
+			name: 'Media Management Agent',
+			example: 'Add The Matrix to my library',
+			key: 'management',
+			description: 'Agent for managing media'
+		}
+	];
+
+	$effect(() => {
+		if (isManagement) {
+			activeAgent = 'management';
+			if (fileName) {
+				query = `Move ${fileName} to the correct location`;
+			}
+		} else {
+			// Only reset to 'series' if not already set by URL params
+			const urlAgent = urlParams.get('agent');
+			if (urlAgent && ['series', 'movie', 'management'].includes(urlAgent)) {
+				activeAgent = urlAgent;
+			} else if (!activeAgent) {
+				activeAgent = 'series';
+			}
+		}
+	});
 </script>
 
 <div class="flex h-full flex-col gap-6 overflow-hidden">
 	<!-- Input Section -->
-	<div class="flex flex-col gap-4 rounded-lg border border-border bg-card dark:bg-card/50 p-6 shadow-sm dark:shadow-lg">
+	<div
+		class="flex flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-sm dark:bg-card/50 dark:shadow-lg"
+	>
 		<div class="flex items-center gap-3">
-			<div class="flex size-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20">
+			<div
+				class="flex size-10 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20"
+			>
 				<svg
 					xmlns="http://www.w3.org/2000/svg"
 					width="20"
@@ -94,9 +138,9 @@
 		</div>
 		<div class="flex gap-3">
 			<textarea
-				class="flex min-h-[100px] w-full min-w-0 rounded-md border border-input bg-background dark:bg-input/40 px-4 py-3 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50 focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] dark:text-foreground"
+				class="flex min-h-[100px] w-full min-w-0 rounded-md border border-input bg-background px-4 py-3 text-sm shadow-xs ring-offset-background transition-[color,box-shadow] outline-none selection:bg-primary selection:text-primary-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-input/40 dark:text-foreground"
 				bind:value={query}
-				placeholder={agents.find(a => a.key === activeAgent)?.example}
+				placeholder={agents.find((a) => a.key === activeAgent)?.example}
 				onkeydown={(e) => {
 					if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
 						handleAgentInput();
@@ -110,7 +154,12 @@
 
 		<div class="flex gap-2">
 			{#each agents as agent}
-				<Button class={`flex flex-col items-start h-16 ${agent.key === activeAgent ? 'bg-primary/10 dark:bg-primary/20' : ''}`} variant="outline" size="sm" onclick={() => setActiveAgent(agent.key)}>
+				<Button
+					class={`flex h-16 flex-col items-start ${agent.key === activeAgent ? 'bg-primary/10 dark:bg-primary/20' : ''}`}
+					variant="outline"
+					size="sm"
+					onclick={() => setActiveAgent(agent.key)}
+				>
 					<p>{agent.name}</p>
 					<p class="text-xs text-muted-foreground">{agent.description}</p>
 				</Button>
@@ -119,10 +168,16 @@
 	</div>
 
 	<!-- Log Section -->
-	<div class="flex flex-1 flex-col gap-4 overflow-hidden rounded-lg border border-border bg-card dark:bg-card/50 shadow-sm dark:shadow-lg">
-		<div class="flex items-center justify-between border-b border-border dark:border-border/50 px-6 py-4">
+	<div
+		class="flex flex-1 flex-col gap-4 overflow-hidden rounded-lg border border-border bg-card shadow-sm dark:bg-card/50 dark:shadow-lg"
+	>
+		<div
+			class="flex items-center justify-between border-b border-border px-6 py-4 dark:border-border/50"
+		>
 			<div class="flex items-center gap-3">
-				<div class="flex size-8 items-center justify-center rounded-full bg-secondary dark:bg-secondary/80">
+				<div
+					class="flex size-8 items-center justify-center rounded-full bg-secondary dark:bg-secondary/80"
+				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="16"
@@ -143,7 +198,8 @@
 				<div>
 					<h3 class="text-base font-semibold text-card-foreground">Agent Log</h3>
 					<p class="text-xs text-muted-foreground">
-						{log.length} {log.length === 1 ? 'entry' : 'entries'}
+						{log.length}
+						{log.length === 1 ? 'entry' : 'entries'}
 					</p>
 				</div>
 			</div>
@@ -163,7 +219,9 @@
 			{#if log.length === 0}
 				<div class="flex h-full items-center justify-center">
 					<div class="text-center">
-						<div class="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted dark:bg-muted/50">
+						<div
+							class="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted dark:bg-muted/50"
+						>
 							<svg
 								xmlns="http://www.w3.org/2000/svg"
 								width="32"
@@ -182,16 +240,14 @@
 							</svg>
 						</div>
 						<p class="text-sm font-medium text-card-foreground">No log entries yet</p>
-						<p class="mt-1 text-xs text-muted-foreground">
-							Send a command to see agent activity
-						</p>
+						<p class="mt-1 text-xs text-muted-foreground">Send a command to see agent activity</p>
 					</div>
 				</div>
 			{:else}
 				<div class="flex flex-col gap-3">
 					{#each log as l, index}
 						<div
-							class="group flex items-start gap-3 rounded-lg border border-border dark:border-border/50 bg-muted/30 dark:bg-muted/20 p-4 transition-colors hover:bg-muted/50 dark:hover:bg-muted/30"
+							class="group flex items-start gap-3 rounded-lg border border-border bg-muted/30 p-4 transition-colors hover:bg-muted/50 dark:border-border/50 dark:bg-muted/20 dark:hover:bg-muted/30"
 						>
 							<div class="mt-0.5 flex shrink-0">
 								<div
@@ -219,18 +275,18 @@
 								<p class="text-sm leading-relaxed text-card-foreground">{l.message}</p>
 								{#if l.status}
 									<div class="mt-2 flex items-center gap-2">
-								<span
-									class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {l.status === 'end'
-										? 'bg-green-500/10 dark:bg-green-500/20 text-green-600 dark:text-green-400'
-										: l.status === 'error'
-										? 'bg-destructive/10 dark:bg-destructive/20 text-destructive dark:text-destructive'
-										: l.status === 'info'
-										? 'bg-yellow-500/10 dark:bg-yellow-500/20 text-yellow-600 dark:text-yellow-400'
-										: 'bg-primary/10 dark:bg-primary/20 text-primary-foreground dark:text-primary'
-									}"
-								>
-									{l.status}
-								</span>
+										<span
+											class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {l.status ===
+											'end'
+												? 'bg-green-500/10 text-green-600 dark:bg-green-500/20 dark:text-green-400'
+												: l.status === 'error'
+													? 'bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive'
+													: l.status === 'info'
+														? 'bg-yellow-500/10 text-yellow-600 dark:bg-yellow-500/20 dark:text-yellow-400'
+														: 'bg-primary/10 text-primary-foreground dark:bg-primary/20 dark:text-primary'}"
+										>
+											{l.status}
+										</span>
 									</div>
 								{/if}
 							</div>

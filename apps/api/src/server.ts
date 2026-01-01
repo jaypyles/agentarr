@@ -4,6 +4,7 @@ import { logger } from "@repo/logger";
 import fastify from "fastify";
 import { FastifySSEPlugin } from "fastify-sse-v2";
 import { DecideSeriesAgent } from "./agents/decide-series";
+import { managementRoutes } from "./management";
 import { jellyfinService } from "./services/jellyfin/service";
 import { prowlarrService } from "./services/prowlarr";
 import { radarrService } from "./services/radarr/service";
@@ -11,6 +12,7 @@ import { sonarrService } from "./services/sonarr";
 import { toAiReadableSeries } from "./utils";
 import { AddMovieWorkflow } from "./workflows/add-movie";
 import { AddSeriesWorkflow } from "./workflows/add-series";
+import { MoveFilesWorkflow } from "./workflows/move-files";
 
 const SERIES_CACHE = new Map<string, SonarrSeries[]>();
 
@@ -22,6 +24,7 @@ async function start() {
   });
 
   await server.register(FastifySSEPlugin);
+  await managementRoutes(server);
 
   server.get("/agent/add-series", async (req, res) => {
     const { query } = req.query as { query: string };
@@ -34,6 +37,13 @@ async function start() {
     const { query } = req.query as { query: string };
 
     const workflow = new AddMovieWorkflow(res);
+    await workflow.run({ query });
+  });
+
+  server.get("/agent/move-files", async (req, res) => {
+    const { query } = req.query as { query: string };
+
+    const workflow = new MoveFilesWorkflow(res);
     await workflow.run({ query });
   });
 

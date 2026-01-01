@@ -1,15 +1,50 @@
 <script lang="ts">
 	import Agents from '$components/common/Agents.svelte';
+	import Management from '$components/common/Management.svelte';
 	import MovieCard from '$components/common/MovieCard.svelte';
 	import SeriesCard from '$components/common/SeriesCard.svelte';
+	import Gear from '$components/icons/Gear.svelte';
+	import Movies from '$components/icons/Movies.svelte';
+	import Person from '$components/icons/Person.svelte';
+	import Tv from '$components/icons/Tv.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar';
-	import type { Movie, SonarrSeries } from '@repo/global-types';
-	let { series, movies }: { series: SonarrSeries[], movies: Movie[] } = $props();
+	import type { Mounts, Movie, SonarrSeries } from '@repo/global-types';
+	let { series, movies, mounts }: { series: SonarrSeries[]; movies: Movie[]; mounts: Mounts } =
+		$props();
 	let active = $state('series');
 
 	const changeActive = (type: string) => {
 		active = type;
+		const urlParams = new URLSearchParams(window.location.search);
+		urlParams.set('tab', type);
+		urlParams.forEach((_, key) => {
+			if (key !== 'tab') {
+				urlParams.delete(key);
+			}
+		});
+		// Preserve other params like option and fileName
+		const newUrl = `/?${urlParams.toString()}`;
+		window.history.pushState({}, '', newUrl);
 	};
+
+	const updateActiveFromUrl = () => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const activeTab = urlParams.get('tab');
+		if (activeTab) {
+			active = activeTab;
+		}
+	};
+
+	$effect(() => {
+		updateActiveFromUrl();
+		
+		// Handle browser back/forward navigation
+		window.addEventListener('popstate', updateActiveFromUrl);
+		
+		return () => {
+			window.removeEventListener('popstate', updateActiveFromUrl);
+		};
+	});
 </script>
 
 <div class="flex h-screen bg-background">
@@ -28,37 +63,29 @@
 						class={`mx-4 flex cursor-pointer items-center gap-2 rounded-md bg-none p-2 hover:bg-muted-foreground/10 ${active === 'series' ? 'bg-muted-foreground/10' : ''}`}
 						onclick={() => changeActive('series')}
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-							><path
-								fill="currentColor"
-								d="M4 21v-2q-.825 0-1.412-.587T2 17V6q0-.825.588-1.412T4 4h16q.825 0 1.413.588T22 6v11q0 .825-.587 1.413T20 19v2h-1l-.65-2H5.675L5 21zm0-4h16V6H4zm8-5.5"
-							/></svg
-						>
+						<Tv />
 						<p>Series</p>
 					</button>
 					<button
 						class={`mx-4 flex cursor-pointer items-center gap-2 rounded-md bg-none p-2 hover:bg-muted-foreground/10 ${active === 'movies' ? 'bg-muted-foreground/10' : ''}`}
 						onclick={() => changeActive('movies')}
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-							><path
-								fill="currentColor"
-								d="m4 4l2 4h3L7 4h2l2 4h3l-2-4h2l2 4h3l-2-4h3q.825 0 1.413.588T22 6v12q0 .825-.587 1.413T20 20H4q-.825 0-1.412-.587T2 18V6q0-.825.588-1.412T4 4"
-							/></svg
-						>
+						<Movies />
 						<p>Movies</p>
 					</button>
 					<button
 						class={`mx-4 flex cursor-pointer items-center gap-2 rounded-md bg-none p-2 hover:bg-muted-foreground/10 ${active === 'agents' ? 'bg-muted-foreground/10' : ''}`}
 						onclick={() => changeActive('agents')}
 					>
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-							><path
-								fill="currentColor"
-								d="M8 15h8v-.55q0-1.125-1.1-1.787T12 12t-2.9.663T8 14.45zm4-4q.825 0 1.413-.587T14 9t-.587-1.412T12 7t-1.412.588T10 9t.588 1.413T12 11m-8 8q-.825 0-1.412-.587T2 17V5q0-.825.588-1.412T4 3h16q.825 0 1.413.588T22 5v12q0 .825-.587 1.413T20 19h-4v1q0 .425-.288.713T15 21H9q-.425 0-.712-.288T8 20v-1z"
-							/></svg
-						>
+						<Person />
 						<p>Agents</p>
+					</button>
+					<button
+						class={`mx-4 flex cursor-pointer items-center gap-2 rounded-md bg-none p-2 hover:bg-muted-foreground/10 ${active === 'management' ? 'bg-muted-foreground/10' : ''}`}
+						onclick={() => changeActive('management')}
+					>
+						<Gear />
+						<p>Media Management</p>
 					</button>
 				</Sidebar.Group>
 			</Sidebar.Content>
@@ -93,6 +120,10 @@
 
 		{#if active === 'agents'}
 			<Agents />
+		{/if}
+
+		{#if active === 'management'}
+			<Management {mounts} />
 		{/if}
 	</main>
 </div>
