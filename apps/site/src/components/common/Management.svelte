@@ -74,7 +74,10 @@
 		return parts.length > 1 ? parts[parts.length - 1].toLowerCase() : '';
 	};
 
-	const handleClickMoveIcon = (fileName: string) => {
+	const handleClickMoveIcon = (fileName: string, e: MouseEvent) => {
+		e.preventDefault();
+		e.stopPropagation();
+
 		const params = new URLSearchParams({
 			tab: 'agents',
 			option: 'management',
@@ -172,7 +175,7 @@
 								: 'text-muted-foreground'}"
 						/>
 						<span class="flex-1 truncate font-medium">{file.name}</span>
-						<FileSymlink class="h-5 w-5 shrink-0 text-muted-foreground" onclick={() => handleClickMoveIcon(file.name)}/>
+						<FileSymlink class="h-5 w-5 shrink-0 text-muted-foreground" onclick={(e: MouseEvent) => handleClickMoveIcon(file.name, e)} />
 						{#if file.isFile}
 							<span class="text-xs text-muted-foreground">{getFileExtension(file.name)}</span>
 						{/if}
