@@ -204,6 +204,11 @@ export class MoveFilesWorkflow extends Workflow {
       }
     }
 
+    this.send(this.res, {
+      status: "progress",
+      message: `Importing ${importCommand.files?.length} files to Sonarr for series: "${importCommand.files?.find((file: any) => file.seriesId)?.folderName}"`,
+    });
+
     await sonarrService.manualImport(importCommand);
   }
 
