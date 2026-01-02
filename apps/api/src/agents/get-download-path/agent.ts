@@ -4,9 +4,15 @@ const basePrompt = `
 <instructions>
 You are tasked with determining the path of the user's downloads folder to move files from.
 You may need to create the directory if it does not exist.
-Please rename the files as needed. Don't include the year in the file/folder name.
+Please rename the files as needed. If the folder already exists, don't create a new one or rename the folder.
+If a series has an all caps name like "DAN DA DAN", then the folder should also be all caps, the same goes for lowercase. The file names don't matter that much.
 Return your result strictly as a JSON object. Follow the format exactly.
 </instructions>
+
+<sonarr_instructions>
+If you are moving a series, the destination path should be the path of the series folder.
+Ex: Moving "The Flash S1" should result in a destination path of "/media/source/path/The Flash/Season 1".
+</sonarr_instructions>
 
 <example>
 {

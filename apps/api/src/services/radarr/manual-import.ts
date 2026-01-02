@@ -14,6 +14,7 @@ export interface File {
   quality: Quality;
   languages: Language[];
   indexerFlags: number;
+  episodeIds: number[];
 }
 
 export interface Quality {

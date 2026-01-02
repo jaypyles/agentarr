@@ -137,3 +137,25 @@ export type SonarrAddOptions = {
   searchForMissingEpisodes?: boolean;
   searchForCutoffUnmetEpisodes?: boolean;
 };
+
+export interface SonarrEpisode {
+  seriesId: number;
+  tvdbId: number;
+  episodeFileId: number;
+  seasonNumber: number;
+  episodeNumber: number;
+  title: string;
+  airDate: string;
+  airDateUtc: string;
+  lastSearchTime: string;
+  runtime: number;
+  overview: string;
+  hasFile: boolean;
+  monitored: boolean;
+  absoluteEpisodeNumber: number;
+  sceneAbsoluteEpisodeNumber: number;
+  sceneEpisodeNumber: number;
+  sceneSeasonNumber: number;
+  unverifiedSceneNumbering: boolean;
+  id: number;
+}

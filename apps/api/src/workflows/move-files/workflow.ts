@@ -8,6 +8,8 @@ import { mounts } from "@/mounts";
 import { jellyfinService } from "@/services/jellyfin/service";
 import { ManualImportCommand } from "@/services/radarr/manual-import";
 import { radarrService } from "@/services/radarr/service";
+import { ManualImportCommand as SonarrManualImportCommand } from "@/services/sonarr/manual-import";
+import { sonarrService } from "@/services/sonarr/service";
 import { Movie } from "@repo/global-types";
 import { logger } from "@repo/logger";
 import { FastifyReply } from "fastify";
@@ -33,6 +35,9 @@ export class MoveFilesWorkflow extends Workflow {
 
   private async getMoveFilesInstructions() {
     const files = await listFiles(mounts.downloads ?? "");
+    const seriesFiles = files.filter((file) => file.name.includes("S"));
+    const movieFiles = files.filter((file) => !file.name.includes("S"));
+
     const query = `
     <user-query>
     ${this.userQuery}
@@ -42,9 +47,17 @@ export class MoveFilesWorkflow extends Workflow {
     ${JSON.stringify(mounts)}
     </users-mounts>
 
-    I have the following files in my downloads folder:
+    <downloaded-files>
     ${files.map((file) => file.name).join("\n")}
-    Please determine the path of the user's downloads folder to move files from.
+    </downloaded-files>
+
+    <series-files>
+    ${seriesFiles.map((file) => file.name).join("\n")}
+    </series-files>
+
+    <movie-files>
+    ${movieFiles.map((file) => file.name).join("\n")}
+    </movie-files>
     `;
 
     const response = await new GetDownloadPathAgent().run<MoveFilesResponse>(
@@ -90,6 +103,11 @@ export class MoveFilesWorkflow extends Workflow {
 
   private async getRadarrRootFolder() {
     const response = await radarrService.getRootFolder();
+    return response;
+  }
+
+  private async getSonarrRootFolder() {
+    const response = await sonarrService.getRootFolder();
     return response;
   }
 
@@ -140,6 +158,55 @@ export class MoveFilesWorkflow extends Workflow {
     await radarrService.manualImport(importCommand);
   }
 
+  private async importFilesToSonarr(destinationPath: string) {
+    const rootFolder = await this.getSonarrRootFolder();
+    const series = await sonarrService.getSeries();
+    const rootFolderPath = rootFolder.map((folder: any) => folder.path);
+
+    const files = await listFiles(destinationPath);
+
+    const args = `
+    <root_folder_path>
+    ${rootFolderPath}
+    </root_folder_path>
+
+    <series>
+    ${series
+      .map(
+        (series: any) => `{
+      "title": "${series.title}",
+      "seriesId": ${series.id}
+    }`
+      )
+      .join("\n")}
+    </series>
+
+    <files>
+    ${JSON.stringify(files)}
+    </files>
+    `;
+
+    const importCommand =
+      await new GetImportCommandAgent().run<SonarrManualImportCommand>(args);
+
+    const episodes = await sonarrService.getEpisodesForSeries(
+      importCommand.files?.find((file: any) => file.seriesId)?.seriesId ?? 0
+    );
+
+    for (const file of importCommand.files ?? []) {
+      const episodeId = await sonarrService.mapFileToEpisodeIds(
+        file.path,
+        episodes
+      );
+
+      if (!file.episodeIds) {
+        file.episodeIds = [episodeId?.episodeId ?? 0];
+      }
+    }
+
+    await sonarrService.manualImport(importCommand);
+  }
+
   private async scanJellyfinLibrary() {
     this.send(this.res, {
       status: "progress",
@@ -188,7 +255,8 @@ export class MoveFilesWorkflow extends Workflow {
         logger.info("Importing files to Radarr");
         await this.importFilesToRadarr(destinationPath);
       } else {
-        // TODO: Import files to Sonarr
+        logger.info("Importing files to Sonarr");
+        await this.importFilesToSonarr(destinationPath);
       }
 
       await this.scanJellyfinLibrary();

@@ -9,7 +9,8 @@ export interface ManualImportCommand {
 export interface File {
   path: string;
   folderName: string;
-  movieId: number;
+  seriesId: number;
+  episodeIds: number[];
   releaseGroup: string;
   quality: Quality;
   languages: Language[];
@@ -55,13 +56,16 @@ export const manualImport = async (command: ManualImportCommand) => {
 
   const files = command.files?.map((file) => ({
     folderName: file.folderName,
-    movieId: file.movieId,
+    seriesId: file.seriesId,
+    episodeIds: file.episodeIds,
     path: file.path,
     indexerFlags: file.indexerFlags ?? 0,
     releaseGroup: file.releaseGroup ?? "",
     quality: file.quality ?? defaultQuality,
     languages: file.languages ?? defaultLanguages,
   }));
+
+  console.log(files);
 
   const response = await sonarrApi.post("/command", {
     name: command.name ?? "ManualImport",

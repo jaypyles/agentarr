@@ -24,6 +24,23 @@ Return your result strictly as a JSON object. Follow the format exactly.
     ]
 }
 </radarr_example>
+
+<sonarr_example>
+{
+    "files": [
+        {
+            "path": "/tv/The Flash/Season 1/The Flash - S01E01 - Pilot.mp4",
+            "folderName": "The Flash"
+            "seriesId": 1,
+        }, 
+        { 
+        "path": "/tv/The Flash/Season 1/The Flash - S01E02 - The Flash.mp4",
+            "folderName": "The Flash"
+            "seriesId": 1,
+        }
+    ]
+}
+</sonarr_example>
 `;
 
 export class GetImportCommandAgent extends Agent {
