@@ -81,7 +81,7 @@
 		},
 		{
 			name: 'Media Management Agent',
-			example: 'Add The Matrix to my library',
+			example: 'Move The Flash S1 to the correct location',
 			key: 'management',
 			description: 'Agent for managing media'
 		}
