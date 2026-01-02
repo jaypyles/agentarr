@@ -47,6 +47,9 @@ importers:
       fastify-sse-v2:
         specifier: ^4.2.1
         version: 4.2.1(fastify@5.6.2)
+      qbittorrent-api-v2:
+        specifier: ^1.2.2
+        version: 1.2.2
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.15.3)(typescript@5.9.3)
@@ -60,6 +63,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
+      '@types/qbittorrent-api-v2':
+        specifier: ^1.2.3
+        version: 1.2.3
       eslint:
         specifier: ^9.39.1
         version: 9.39.1(jiti@2.6.1)
@@ -959,6 +965,9 @@ packages:
 
   '@types/node@22.15.3':
     resolution: {integrity: sha512-lX7HFZeHf4QG/J7tBZqrCAXwz9J5RD56Y6MpP0eJkka8p+K0RY/yBTW7CYFJ4VGCclxqOLKmiGP5juQc6MKgcw==}
+
+  '@types/qbittorrent-api-v2@1.2.3':
+    resolution: {integrity: sha512-fAaR25LmWdij0zzNxXudLECE3KImnSfglN0vCvJE+c2eUNbXkXYJ22IXFC8Vxra5pB6CSXxjK+Mjv5RkelQsmQ==}
 
   '@types/react-dom@19.2.2':
     resolution: {integrity: sha512-9KQPoO6mZCi7jcIStSnlOWn2nEF3mNmyr3rIAsGnAbQKYbRLyqmeSc39EVgtxXVia+LMT8j3knZLAZAh+xLmrw==}
@@ -2404,6 +2413,9 @@ packages:
     resolution: {integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg==}
     engines: {node: '>=6'}
 
+  qbittorrent-api-v2@1.2.2:
+    resolution: {integrity: sha512-v9nkeikj8EjZJ2Ud/QAkTr038PAM4Xk8WXtR8scVb3jidFGs8gMOrZIL05gy4JNo4b0/vxKlwcC2Zu4IpuMslw==}
+
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -3570,6 +3582,8 @@ snapshots:
   '@types/node@22.15.3':
     dependencies:
       undici-types: 6.21.0
+
+  '@types/qbittorrent-api-v2@1.2.3': {}
 
   '@types/react-dom@19.2.2(@types/react@19.2.2)':
     dependencies:
@@ -5232,6 +5246,8 @@ snapshots:
       once: 1.4.0
 
   punycode@2.3.1: {}
+
+  qbittorrent-api-v2@1.2.2: {}
 
   queue-microtask@1.2.3: {}
 

@@ -1,8 +1,10 @@
 <script lang="ts">
 	import Agents from '$components/common/Agents.svelte';
+	import DownloadClients from '$components/common/DownloadClients.svelte';
 	import Management from '$components/common/Management.svelte';
 	import MovieCard from '$components/common/MovieCard.svelte';
 	import SeriesCard from '$components/common/SeriesCard.svelte';
+	import Download from '$components/icons/Download.svelte';
 	import Gear from '$components/icons/Gear.svelte';
 	import Movies from '$components/icons/Movies.svelte';
 	import Person from '$components/icons/Person.svelte';
@@ -37,10 +39,10 @@
 
 	$effect(() => {
 		updateActiveFromUrl();
-		
+
 		// Handle browser back/forward navigation
 		window.addEventListener('popstate', updateActiveFromUrl);
-		
+
 		return () => {
 			window.removeEventListener('popstate', updateActiveFromUrl);
 		};
@@ -87,6 +89,13 @@
 						<Gear />
 						<p>Media Management</p>
 					</button>
+					<button
+						class={`mx-4 flex cursor-pointer items-center gap-2 rounded-md bg-none p-2 hover:bg-muted-foreground/10 ${active === 'download-client' ? 'bg-muted-foreground/10' : ''}`}
+						onclick={() => changeActive('download-client')}
+					>
+						<Download />
+						<p>Download Client</p>
+					</button>
 				</Sidebar.Group>
 			</Sidebar.Content>
 			<Sidebar.Footer />
@@ -124,6 +133,10 @@
 
 		{#if active === 'management'}
 			<Management {mounts} />
+		{/if}
+
+		{#if active === 'download-client'}
+			<DownloadClients />
 		{/if}
 	</main>
 </div>

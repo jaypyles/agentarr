@@ -9,6 +9,7 @@
 		"@repo/eslint-config": "workspace:*",
 		"@repo/global-types": "workspace:*",
 		"@repo/typescript-config": "workspace:*",
+		"@types/qbittorrent-api-v2": "^1.2.3",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
 		"prettier": "^3.7.4",
@@ -25,6 +26,7 @@
 		"dotenv": "^17.2.3",
 		"fastify": "^5.6.2",
 		"fastify-sse-v2": "^4.2.1",
+		"qbittorrent-api-v2": "^1.2.2",
 		"ts-node": "^10.9.2"
 	}
 }

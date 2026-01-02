@@ -4,6 +4,7 @@ import { logger } from "@repo/logger";
 import fastify from "fastify";
 import { FastifySSEPlugin } from "fastify-sse-v2";
 import { DecideSeriesAgent } from "./agents/decide-series";
+import { downloadRoutes } from "./download";
 import { managementRoutes } from "./management";
 import { jellyfinService } from "./services/jellyfin/service";
 import { prowlarrService } from "./services/prowlarr";
@@ -24,6 +25,7 @@ async function start() {
   });
 
   await server.register(FastifySSEPlugin);
+  await downloadRoutes(server);
   await managementRoutes(server);
 
   server.get("/agent/add-series", async (req, res) => {
