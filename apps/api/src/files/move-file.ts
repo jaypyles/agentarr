@@ -1,13 +1,15 @@
 import fs from "fs/promises";
+import path from "path";
 
-export const moveFile = async (sourcePath: string, destinationPath: string) => {
+export async function moveFile(src: string, dest: string) {
+  await fs.mkdir(path.dirname(dest), { recursive: true });
+
   try {
-    await fs.rename(sourcePath, destinationPath);
-  } catch (error) {
-    console.error(
-      `Failed to move file ${sourcePath} to ${destinationPath}:`,
-      error
-    );
-    throw error;
+    await fs.rename(src, dest);
+  } catch (err: any) {
+    if (err.code !== "EXDEV") throw err;
+
+    await fs.cp(src, dest, { recursive: true });
+    await fs.rm(src, { recursive: true, force: true });
   }
-};
+}
