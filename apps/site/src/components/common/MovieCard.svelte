@@ -1,16 +1,14 @@
 <script lang="ts">
-	import { useJellyfinSeries } from '$lib/hooks/use-jellyfin-series.svelte';
 	import { apps } from '$stores/apps';
-	import type { Movie } from '@repo/global-types';
+	import type { JellyfinItem, Movie } from '@repo/global-types';
 	import PosterCard from './PosterCard.svelte';
 
 	apps.load();
 
-	let { movie }: { movie: Movie } = $props();
+	let { movie, jellyfinItem }: { movie: Movie; jellyfinItem: JellyfinItem | undefined } = $props();
 	const poster = $derived(movie.images?.find((movie) => movie.coverType === 'poster'));
 	const radarrUrl = $derived($apps.radarr);
 	const jellyfinUrl = $derived($apps.jellyfin);
-    const state = $derived(useJellyfinSeries(movie, 'movie'));
 </script>
 
 <PosterCard poster={poster?.remoteUrl ?? ''}>
@@ -21,9 +19,9 @@
 	>
 		<img src="/images/radarr.svg" alt="Radarr" class="h-6 w-6 opacity-70" />
 	</a>
-    {#if state.jellyfinItem}
+    {#if jellyfinItem}
 	<a
-		href={`${jellyfinUrl}/web/#/details?id=${state.jellyfinItem?.Id ?? ''}`}
+		href={`${jellyfinUrl}/web/#/details?id=${jellyfinItem?.Id ?? ''}`}
 		target="_blank"
 		class="flex gap-2 rounded-md bg-black/50 p-2 hover:cursor-pointer hover:bg-black"
 	>

@@ -1,9 +1,11 @@
 <script lang="ts">
 	import ConnectedTo from '$components/common/ConnectedTo.svelte';
 	import MovieCard from '$components/common/MovieCard.svelte';
+	import { useJellyfinSeries } from '$lib/hooks/use-jellyfin-series.svelte';
 	import { apps } from '$stores/apps';
 	import type { Movie } from '@repo/global-types';
 	let { movies }: { movies: Movie[] } = $props();
+	const state = $derived(useJellyfinSeries(movies, 'movie'));
 </script>
 
 <div
@@ -15,7 +17,7 @@
 
 	<div class="grid flex-1 auto-rows-min grid-cols-6 items-start gap-4 overflow-auto p-4">
 		{#each movies as m}
-			<MovieCard movie={m} />
+			<MovieCard movie={m} jellyfinItem={state.jellyfinItem?.[m.title ?? ''] ?? undefined} />
 		{/each}
 	</div>
 </div>

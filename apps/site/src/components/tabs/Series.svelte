@@ -1,9 +1,11 @@
 <script lang="ts">
 	import ConnectedTo from '$components/common/ConnectedTo.svelte';
 	import SeriesCard from '$components/common/SeriesCard.svelte';
+	import { useJellyfinSeries } from '$lib/hooks/use-jellyfin-series.svelte';
 	import { apps } from '$stores/apps';
 	import type { SonarrSeries } from '@repo/global-types';
 	let { series }: { series: SonarrSeries[] } = $props();
+	const state = $derived(useJellyfinSeries(series, 'series'));
 </script>
 
 <div
@@ -15,7 +17,7 @@
 
 	<div class="grid flex-1 auto-rows-min grid-cols-6 items-start gap-4 overflow-auto p-4">
 		{#each series as s}
-			<SeriesCard series={s} />
+			<SeriesCard series={s} jellyfinItem={state.jellyfinItem?.[s.title ?? ''] ?? undefined} />
 		{/each}
 	</div>
 </div>

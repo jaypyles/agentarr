@@ -1,5 +1,9 @@
 import { jellyfinApi } from "@/api";
-import { JellyfinItemsResponse } from "@repo/global-types";
+import {
+  JellyfinItem,
+  JellyfinItemsResponse,
+  SonarrSeries,
+} from "@repo/global-types";
 
 const tryGetMovie = async (searchTerm: string) => {
   const response = await jellyfinApi.get<JellyfinItemsResponse>("/Items", {
@@ -17,10 +21,7 @@ const tryGetMovie = async (searchTerm: string) => {
   return response.data.Items[0];
 };
 
-export const getMovie = async (
-  searchTerm: string,
-  alternateTitles: string[]
-) => {
+const getMovie = async (searchTerm: string, alternateTitles: string[]) => {
   let movie = null;
   movie = await tryGetMovie(searchTerm);
 
@@ -38,4 +39,23 @@ export const getMovie = async (
   }
 
   return movie;
+};
+
+export const searchForMovie = async (
+  movieList: Pick<SonarrSeries, "title" | "alternateTitles">[]
+) => {
+  const movieMap = new Map<string, JellyfinItem>();
+
+  for (const m of movieList) {
+    const movie = await getMovie(
+      m.title ?? "",
+      m.alternateTitles?.map((alt) => alt.title ?? "") ?? []
+    );
+
+    if (movie) {
+      movieMap.set(m.title ?? "", movie);
+    }
+  }
+
+  return movieMap;
 };
