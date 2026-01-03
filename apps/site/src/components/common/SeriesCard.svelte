@@ -3,8 +3,6 @@
 	import type { JellyfinItem, SonarrSeries } from '@repo/global-types';
 	import PosterCard from './PosterCard.svelte';
 
-	apps.load();
-
 	let { series, jellyfinItem }: { series: SonarrSeries; jellyfinItem: JellyfinItem | undefined } =
 		$props();
 	const poster = $derived(series.images?.find((image) => image.coverType === 'poster'));

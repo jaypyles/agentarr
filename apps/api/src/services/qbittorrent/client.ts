@@ -17,7 +17,7 @@ const getClient = async (): Promise<
 
   connectionPromise = api
     .connect(
-      process.env.QB_URL ?? "",
+      process.env.INTERNAL_QB_URL ?? process.env.QB_URL ?? "",
       process.env.QB_USERNAME ?? "",
       process.env.QB_PASSWORD ?? ""
     )

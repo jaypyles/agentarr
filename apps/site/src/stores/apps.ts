@@ -1,4 +1,4 @@
-import { apiServer } from '$lib/api';
+import { browser } from '$app/environment';
 import type { Apps } from '@repo/global-types';
 import { writable } from 'svelte/store';
 
@@ -17,13 +17,23 @@ function createAppsStore() {
 		if (loaded) return;
 		loaded = true;
 
-		const res = await apiServer.get('/apps');
-		set(res.data);
+		if (browser) {
+			console.warn(
+				'apps.load() should not be called in the browser. Apps data should be loaded server-side.'
+			);
+			return;
+		}
+	}
+
+	function initialize(data: Apps) {
+		set(data);
+		loaded = true;
 	}
 
 	return {
 		subscribe,
-		load
+		load,
+		initialize
 	};
 }
 

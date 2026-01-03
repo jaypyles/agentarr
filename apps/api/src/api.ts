@@ -4,28 +4,28 @@ import dotenv from "dotenv";
 dotenv.config();
 
 export const sonarrApi = axios.create({
-  baseURL: `${process.env.SONARR_URL}/api/v3`,
+  baseURL: `${process.env.INTERNAL_SONARR_URL ?? process.env.SONARR_URL}/api/v3`,
   headers: {
     "X-Api-Key": process.env.SONARR_API_KEY || "",
   },
 });
 
 export const prowlarrApi = axios.create({
-  baseURL: `${process.env.PROWLARR_URL}/api/v1`,
+  baseURL: `${process.env.INTERNAL_PROWLARR_URL ?? process.env.PROWLARR_URL}/api/v1`,
   headers: {
     "X-Api-Key": process.env.PROWLARR_API_KEY || "",
   },
 });
 
 export const radarrApi = axios.create({
-  baseURL: `${process.env.RADARR_URL}/api/v3`,
+  baseURL: `${process.env.INTERNAL_RADARR_URL ?? process.env.RADARR_URL}/api/v3`,
   headers: {
     "X-Api-Key": process.env.RADARR_API_KEY || "",
   },
 });
 
 export const jellyfinApi = axios.create({
-  baseURL: process.env.JELLYFIN_URL || "",
+  baseURL: process.env.INTERNAL_JELLYFIN_URL ?? process.env.JELLYFIN_URL ?? "",
   headers: {
     Authorization: `MediaBrowser Client="MediaBrowser Client", Device="super-cool-device", DeviceId="super-cool-device-id", Token="${process.env.JELLYFIN_API_KEY || ""}"`,
   },
