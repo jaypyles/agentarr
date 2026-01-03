@@ -15,7 +15,7 @@
 	};
 
 	const getAgentUrl = (agent: string) => {
-		const apiUrl = import.meta.env.VITE_API_URL ?? 'http://localhost:3000';
+		const apiUrl = '/stream'
 
 		switch (agent) {
 			case 'series':
