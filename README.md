@@ -45,6 +45,33 @@ This application currently supports:
 
 3. The app will be available at http://localhost:5173
 
+### Display vs Internal
+
+When deploying in containerized environments like Kubernetes, you may need different URLs for:
+- **Internal communication**: Server-to-server connections (e.g., Kubernetes service names)
+- **Display URLs**: URLs shown to users in the browser (e.g., external ingress URLs)
+
+The application supports this through environment variable patterns:
+
+#### Internal Variables
+
+For server-to-server communication (these are optional), use `INTERNAL_*_URL` variables. These are used when the API server connects to other services:
+
+- `INTERNAL_SONARR_URL` - Internal URL for Sonarr (e.g., `http://sonarr-service:8989`)
+- `INTERNAL_RADARR_URL` - Internal URL for Radarr (e.g., `http://radarr-service:7878`)
+- `INTERNAL_PROWLARR_URL` - Internal URL for Prowlarr (e.g., `http://prowlarr-service:9696`)
+- `INTERNAL_JELLYFIN_URL` - Internal URL for Jellyfin (e.g., `http://jellyfin-service:8096`)
+- `INTERNAL_QB_URL` - Internal URL for qBittorrent (e.g., `http://qbittorrent-service:8080`)
+
+#### Display Variables
+
+For URLs displayed to users in the browser, use the standard `*_URL` variables:
+
+- `SONARR_URL` - Public URL for Sonarr (e.g., `https://sonarr.example.com`)
+- `RADARR_URL` - Public URL for Radarr (e.g., `https://radarr.example.com`)
+- `PROWLARR_URL` - Public URL for Prowlarr (e.g., `https://prowlarr.example.com`)
+- `JELLYFIN_URL` - Public URL for Jellyfin (e.g., `https://jellyfin.example.com`)
+- `QB_URL` - Public URL for qBittorrent (e.g., `https://qbittorrent.example.com`)
 
 ## Contributing
 

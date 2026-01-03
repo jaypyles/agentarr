@@ -1,7 +1,7 @@
 <script lang="ts">
-	import './layout.css';
-	import favicon from '$lib/assets/favicon.svg';
+	import favicon from '$lib/assets/favicon.ico';
 	import { onMount } from 'svelte';
+	import './layout.css';
 
 	let { children } = $props();
 
@@ -31,5 +31,5 @@
 	});
 </script>
 
-<svelte:head><link rel="icon" href={favicon} /></svelte:head>
+<svelte:head><title>Agentarr</title><link rel="icon" href={favicon} /></svelte:head>
 {@render children()}
