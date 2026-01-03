@@ -5,6 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: agentarr
+    restart: unless-stopped
     env_file:
       - .env
     ports:

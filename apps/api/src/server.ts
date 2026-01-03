@@ -140,11 +140,31 @@ async function start() {
     done();
   });
 
-  await server.listen({ port: 3000, host: '0.0.0.0' });
+  await server.listen({ port: 3000, host: "0.0.0.0" });
   logger.info(`Server is running on http://0.0.0.0:3000`);
 }
 
+process.on("uncaughtException", (err) => {
+  logger.error({ err }, "Uncaught Exception");
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+  logger.error({ err: reason }, "Unhandled Rejection");
+  process.exit(1);
+});
+
+process.on("SIGTERM", async () => {
+  logger.info("SIGTERM received, shutting down gracefully");
+  process.exit(0);
+});
+
+process.on("SIGINT", async () => {
+  logger.info("SIGINT received, shutting down gracefully");
+  process.exit(0);
+});
+
 start().catch((err) => {
-  console.error(err);
+  logger.error({ err }, "Failed to start server");
   process.exit(1);
 });
