@@ -8,33 +8,21 @@ export function useJellyfinSeries(
 ) {
 	let state = $state<JellyfinItem | undefined>(undefined);
 
-	const tryGetJellyfinSeries = async (searchTerm: string) => {
+	const get = async (series: Pick<SonarrSeries, 'title' | 'alternateTitles'>) => {
 		try {
-			return await api.get(`/jellyfin/get-${type}?searchTerm=${searchTerm}`);
+			const response = await api.post(`/jellyfin/get-${type}`, { series });
+			state = response.data;
 		} catch (error) {
 			if (error instanceof AxiosError && error.response?.status === 404) {
-				return { status: 404, data: null };
-			}
-			throw error;
-		}
-	};
-
-	const getJellyfinSeries = async () => {
-		let res = await tryGetJellyfinSeries(series.title ?? '');
-
-		if (res?.status !== 200) {
-			for (const alt of series.alternateTitles ?? []) {
-				res = await tryGetJellyfinSeries(alt.title ?? '');
-				if (res?.status === 200) break;
-				await new Promise((r) => setTimeout(r, 100));
+				state = undefined;
+			} else {
+				throw error;
 			}
 		}
-
-		state = res?.data ?? undefined;
 	};
 
 	$effect(() => {
-		getJellyfinSeries();
+		get(series);
 	});
 
 	return {

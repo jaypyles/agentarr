@@ -40,7 +40,7 @@ RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 ENV NODE_ENV=production
 
 # tini handles signals correctly
-RUN apk add --no-cache tini
+RUN apk add --no-cache tini curl
 ENTRYPOINT ["/sbin/tini", "--"]
 
 COPY --from=builder /app ./

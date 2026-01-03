@@ -1,7 +1,7 @@
 import { jellyfinApi } from "@/api";
 import { JellyfinItemsResponse } from "@repo/global-types";
 
-export const getSeries = async (searchTerm: string) => {
+const tryGetSeries = async (searchTerm: string) => {
   const response = await jellyfinApi.get<JellyfinItemsResponse>("/Items", {
     params: {
       SearchTerm: searchTerm,
@@ -16,4 +16,28 @@ export const getSeries = async (searchTerm: string) => {
   }
 
   return response.data.Items[0];
+};
+
+export const getSeries = async (
+  searchTerm: string,
+  alternateTitles: string[]
+) => {
+  let series = null;
+  series = await tryGetSeries(searchTerm);
+
+  if (!series) {
+    for (const alternateTitle of alternateTitles) {
+      series = await tryGetSeries(alternateTitle);
+      if (series) {
+        break;
+      }
+    }
+    await new Promise((resolve) => setTimeout(resolve, 100));
+  }
+
+  if (!series) {
+    return null;
+  }
+
+  return series;
 };

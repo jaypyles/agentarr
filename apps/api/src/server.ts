@@ -1,5 +1,5 @@
 import cors from "@fastify/cors";
-import { Apps, SonarrSeries } from "@repo/global-types";
+import { Apps, Movie, SonarrSeries } from "@repo/global-types";
 import { logger } from "@repo/logger";
 import fastify from "fastify";
 import { FastifySSEPlugin } from "fastify-sse-v2";
@@ -27,6 +27,10 @@ async function start() {
   await server.register(FastifySSEPlugin);
   await downloadRoutes(server);
   await managementRoutes(server);
+
+  server.get("/health", async (req, res) => {
+    res.status(200).send({ message: "OK" });
+  });
 
   server.get("/agent/add-series", async (req, res) => {
     const { query, debug } = req.query as { query: string; debug: string };
@@ -61,9 +65,15 @@ async function start() {
     res.status(200).send(apps);
   });
 
-  server.get("/jellyfin/get-series", async (req, res) => {
-    const { searchTerm } = req.query as { searchTerm: string };
-    const series = await jellyfinService.getSeries(searchTerm);
+  server.post("/jellyfin/get-series", async (req, res) => {
+    const {
+      series: { title, alternateTitles },
+    } = req.body as { series: Pick<SonarrSeries, "title" | "alternateTitles"> };
+
+    const series = await jellyfinService.getSeries(
+      title ?? "",
+      alternateTitles?.map((alt) => alt.title ?? "") ?? []
+    );
 
     if (!series) {
       return res.status(404).send({ error: "Series not found" });
@@ -73,16 +83,30 @@ async function start() {
     res.status(200).send(series);
   });
 
-  server.get("/jellyfin/get-movie", async (req, res) => {
-    const { searchTerm } = req.query as { searchTerm: string };
-    const series = await jellyfinService.getMovie(searchTerm);
+  server.post("/jellyfin/get-movie", async (req, res) => {
+    try {
+      const {
+        series: { title, alternateTitles },
+      } = req.body as { series: Pick<Movie, "title" | "alternateTitles"> };
 
-    if (!series) {
-      return res.status(404).send({ error: "Movie not found" });
+      const movie = await jellyfinService.getMovie(
+        title ?? "",
+        alternateTitles?.map((alt) => alt?.title ?? "") ?? []
+      );
+
+      if (!movie) {
+        return res.status(404).send({ error: "Movie not found" });
+      }
+
+      res.header("Cache-Control", "max-age=120, public");
+      res.status(200).send(movie);
+    } catch (error) {
+      logger.error({ err: error, body: req.body }, "Error in get-movie");
+      res.status(500).send({
+        error: "Internal Server Error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
     }
-
-    res.header("Cache-Control", "max-age=120, public");
-    res.status(200).send(series);
   });
 
   server.get("/sonarr/get-series", async (req, res) => {
