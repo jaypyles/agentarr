@@ -1,0 +1,29 @@
+on: 
+    workflow_dispatch:
+        inputs:
+            version:
+                description: "The version of the image to build and push"
+                required: true
+                default: "latest"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/agentarr:${{ inputs.version }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/agentarr:latest
