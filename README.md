@@ -16,7 +16,7 @@ Agentarr is an AI-powered media management application that integrates with popu
 
 ## Startup Guide
 
-1. Copy the `.env.example` to `.env`:
+1. Copy the `.env.example` to `.env` and fill in the environment variables:
 
    ```bash
    cp .env.example .env
