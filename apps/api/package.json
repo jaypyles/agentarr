@@ -1,9 +1,11 @@
 {
-	"name": "cockpit-api",
+	"name": "api",
 	"private": true,
 	"version": "0.0.1",
 	"scripts": {
-		"dev": "nodemon --watch src --exec tsx src/server.ts"
+		"dev": "nodemon --watch src --exec tsx src/server.ts",
+		"build": "tsc && tsc-alias",
+		"start": "node dist/server.js"
 	},
 	"devDependencies": {
 		"@repo/eslint-config": "workspace:*",
@@ -13,6 +15,7 @@
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "^10.1.8",
 		"prettier": "^3.7.4",
+		"tsc-alias": "^1.8.10",
 		"tsx": "^4.21.0",
 		"typescript": "^5.9.3"
 	},

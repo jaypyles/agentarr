@@ -1,11 +1,11 @@
-import { api } from '$lib/api';
+import { apiServer } from '$lib/api';
 import type { RequestHandler } from './$types';
 
 export const GET: RequestHandler = async () => {
 	const promises = [
-		api.get('/sonarr/get-series', { headers: { 'Cache-Control': '3600' } }).then((res) => res.data),
-		api.get('/radarr/get-movies', { headers: { 'Cache-Control': '3600' } }).then((res) => res.data),
-		api.get('/management/mounts', { headers: { 'Cache-Control': '3600' } }).then((res) => res.data)
+		apiServer.get('/sonarr/get-series').then((res) => res.data),
+		apiServer.get('/radarr/get-movies').then((res) => res.data),
+		apiServer.get('/management/mounts').then((res) => res.data)
 	];
 
 	try {

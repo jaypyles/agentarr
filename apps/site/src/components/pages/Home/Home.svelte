@@ -54,8 +54,8 @@
 		<Sidebar.Root>
 			<Sidebar.Header class="mb-4 text-2xl font-bold">
 				<div class="mt-2 ml-2 flex items-center gap-2">
-					<img src="/images/cockpit-logo.png" alt="Cockpit" class="h-8 w-8" />
-					<p>COCKPIT</p>
+					<img src="/images/agentarr-logo.png" alt="Agentarr" class="h-8 w-8" />
+					<p>AGENTARR</p>
 				</div>
 			</Sidebar.Header>
 			<Sidebar.Content>

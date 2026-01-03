@@ -140,8 +140,8 @@ async function start() {
     done();
   });
 
-  await server.listen({ port: 3000 });
-  logger.info(`Server is running on http://127.0.0.1:3000`);
+  await server.listen({ port: 3000, host: '0.0.0.0' });
+  logger.info(`Server is running on http://0.0.0.0:3000`);
 }
 
 start().catch((err) => {

@@ -1,4 +1,4 @@
-import { api } from '$lib/api';
+import { apiServer } from '$lib/api';
 import type { Apps } from '@repo/global-types';
 import { writable } from 'svelte/store';
 
@@ -16,7 +16,7 @@ function createAppsStore() {
 		if (loaded) return;
 		loaded = true;
 
-		const res = await api.get('/apps');
+		const res = await apiServer.get('/apps');
 		set(res.data);
 	}
 

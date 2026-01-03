@@ -2,9 +2,16 @@
     "name": "@repo/logger",
     "version": "0.0.0",
     "private": true,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "exports": {
-        ".": "./src/index.ts",
-        "./*": "./src/*.ts"
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsc"
     },
     "devDependencies": {
         "@repo/eslint-config": "workspace:*",
