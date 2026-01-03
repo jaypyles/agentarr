@@ -24,12 +24,14 @@ type MoveFilesResponse = {
 };
 
 export class MoveFilesWorkflow extends Workflow {
+  debug: boolean = false;
   res: FastifyReply;
   userQuery: string;
 
-  constructor(res: FastifyReply) {
+  constructor(res: FastifyReply, debug: boolean = false) {
     super("Move Files Workflow");
     this.res = res;
+    this.debug = debug;
     this.userQuery = "";
   }
 
@@ -69,6 +71,7 @@ export class MoveFilesWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: "Getting move files instructions",
+      ...(this.debug ? { raw: response } : {}),
     });
 
     if (response.error) {
@@ -82,6 +85,7 @@ export class MoveFilesWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: "Creating directories: " + paths.join(", "),
+      ...(this.debug ? { raw: paths } : {}),
     });
 
     for (const path of paths) {
@@ -94,6 +98,7 @@ export class MoveFilesWorkflow extends Workflow {
       status: "progress",
       message:
         "Moving files: " + sourcePaths.join(", ") + " to " + destinationPath,
+      ...(this.debug ? { raw: { sourcePaths, destinationPath } } : {}),
     });
 
     for (const sourcePath of sourcePaths) {
@@ -153,6 +158,7 @@ export class MoveFilesWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: `Importing "${importCommand.files?.map((file: any) => file.path).join(", ")}" for Movie: "${importCommand.files?.map((file: any) => file.folderName).join(", ")}" in Radarr`,
+      ...(this.debug ? { raw: importCommand } : {}),
     });
 
     await radarrService.manualImport(importCommand);
@@ -207,6 +213,7 @@ export class MoveFilesWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: `Importing ${importCommand.files?.length} files to Sonarr for series: "${importCommand.files?.find((file: any) => file.seriesId)?.folderName}"`,
+      ...(this.debug ? { raw: importCommand } : {}),
     });
 
     await sonarrService.manualImport(importCommand);

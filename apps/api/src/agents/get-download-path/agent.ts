@@ -6,6 +6,7 @@ You are tasked with determining the path of the user's downloads folder to move 
 You may need to create the directory if it does not exist.
 Please rename the files as needed. If the folder already exists, don't create a new one or rename the folder.
 If a series has an all caps name like "DAN DA DAN", then the folder should also be all caps, the same goes for lowercase. The file names don't matter that much.
+Even if the movie has a year in the name, the folder should not have the year in the name.
 Return your result strictly as a JSON object. Follow the format exactly.
 </instructions>
 

@@ -12,16 +12,16 @@ export const agentRoutes = async (server: FastifyInstance) => {
   });
 
   server.get("/agent/add-movie", async (req, res) => {
-    const { query } = req.query as { query: string };
+    const { query, debug } = req.query as { query: string; debug: string };
 
-    const workflow = new AddMovieWorkflow(res);
+    const workflow = new AddMovieWorkflow(res, debug === "true");
     await workflow.run({ query });
   });
 
   server.get("/agent/move-files", async (req, res) => {
-    const { query } = req.query as { query: string };
+    const { query, debug } = req.query as { query: string; debug: string };
 
-    const workflow = new MoveFilesWorkflow(res);
+    const workflow = new MoveFilesWorkflow(res, debug === "true");
     await workflow.run({ query });
   });
 };

@@ -14,12 +14,14 @@ type ProwlarrDecision = Pick<
 >;
 
 export class AddMovieWorkflow extends Workflow {
+  debug: boolean = false;
   res: FastifyReply;
   foundMoviesCache: Movie[] | undefined;
 
-  constructor(res: FastifyReply) {
+  constructor(res: FastifyReply, debug: boolean = false) {
     super("Add Movie Workflow");
     this.res = res;
+    this.debug = debug;
   }
 
   private async checkMovies() {
@@ -60,6 +62,7 @@ export class AddMovieWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: "Generated search query: " + `"${response.searchQuery}"`,
+      ...(this.debug ? { raw: response } : {}),
     });
 
     logger.info(log);
@@ -73,6 +76,7 @@ export class AddMovieWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: `Found ${response.length} movies`,
+      ...(this.debug ? { raw: response } : {}),
     });
 
     return response;
@@ -91,6 +95,7 @@ export class AddMovieWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: "Decided on movie: " + `"${decision.title}"`,
+      ...(this.debug ? { raw: decision } : {}),
     });
 
     return decision;
@@ -108,6 +113,7 @@ export class AddMovieWorkflow extends Workflow {
         " is " +
         (isInLibrary ? "in" : "not") +
         " in library",
+      ...(this.debug ? { raw: movie } : {}),
     });
 
     return isInLibrary;
@@ -121,6 +127,7 @@ export class AddMovieWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: `Found ${response.length} movies in Prowlarr`,
+      ...(this.debug ? { raw: response } : {}),
     });
 
     return response;
@@ -144,6 +151,7 @@ export class AddMovieWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: "Decided on movie in Prowlarr: " + `"${decision.title}"`,
+      ...(this.debug ? { raw: decision } : {}),
     });
 
     return decision;
@@ -159,6 +167,7 @@ export class AddMovieWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: "Added movie to Prowlarr: " + `"${title}"`,
+      ...(this.debug ? { raw: { title, guid, indexerId } } : {}),
     });
 
     return response.data;
