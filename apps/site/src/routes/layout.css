@@ -9,6 +9,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* Custom breakpoints for 1080p and 1440p screens */
+@custom-media --1080p (min-width: 1920px);
+@custom-media --1440p (min-width: 2560px);
+
 body {
 	font-family: 'Cabin', sans-serif;
 }

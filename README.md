@@ -14,6 +14,21 @@ Agentarr is an AI-powered media management application that integrates with popu
 - 📁 **File Organization**: AI agents can automatically move and organize media files
 - 🎨 **Modern UI**: Built with SvelteKit and Tailwind CSS for a beautiful, responsive interface
 
+## Support
+
+This application currently supports:
+
+1. Media Management:
+   - Sonarr
+   - Radarr
+   - Prowlarr
+
+2. Streaming:
+   - Jellyfin
+
+3. Download Clients:
+   - Qbittorrent
+
 ## Startup Guide
 
 1. Copy the `.env.example` to `.env` and fill in the environment variables:

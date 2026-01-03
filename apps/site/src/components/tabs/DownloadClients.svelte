@@ -4,7 +4,7 @@
 	import { api } from '$lib/api';
 	import { apps } from '$stores/apps';
 	import type { Torrent, TransferInfo } from '@repo/global-types';
-	import ConnectedTo from './ConnectedTo.svelte';
+	import ConnectedTo from '../common/ConnectedTo.svelte';
 
 	let torrents = $state<Torrent[]>([]);
 	let transferInfo = $state<TransferInfo | null>(null);

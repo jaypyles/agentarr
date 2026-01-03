@@ -3,7 +3,7 @@
 	import type { Agent } from '$lib/types';
 	import { agentLogStore } from '$stores/agent-log';
 	import { settings } from '$stores/settings';
-	import RawDataViewer from './RawDataViewer.svelte';
+	import RawDataViewer from '../common/RawDataViewer.svelte';
 
 	let query = $state('');
 	let source: EventSource | null = null;
