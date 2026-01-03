@@ -1,8 +1,10 @@
 services:
   agentarr:
+    image: jpyles0524/agentarr:latest
     build:
       context: .
       dockerfile: Dockerfile
+    container_name: agentarr
     env_file:
       - .env
     ports:
