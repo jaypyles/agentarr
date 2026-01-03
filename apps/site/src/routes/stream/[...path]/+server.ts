@@ -18,12 +18,22 @@ export const GET: RequestHandler = async ({ params, url, request }) => {
 		headers
 	});
 
+	const contentType = backendResponse.headers.get('content-type') || 'text/event-stream';
+	const responseHeaders = new Headers();
+
+	backendResponse.headers.forEach((value, key) => {
+		responseHeaders.set(key, value);
+	});
+
+	responseHeaders.set('Content-Type', contentType);
+	responseHeaders.set('Cache-Control', 'no-cache, no-transform');
+	responseHeaders.set('Connection', 'keep-alive');
+	responseHeaders.set('X-Accel-Buffering', 'no');
+	responseHeaders.set('X-Content-Type-Options', 'nosniff');
+
 	return new Response(backendResponse.body, {
 		status: backendResponse.status,
-		headers: {
-			...Object.fromEntries(backendResponse.headers),
-			'Cache-Control': 'no-cache',
-			Connection: 'keep-alive'
-		}
+		statusText: backendResponse.statusText,
+		headers: responseHeaders
 	});
 };
