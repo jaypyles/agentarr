@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
-import { getTorrentList } from "./services/qbittorrent/get-torrent-list";
-import { getTransferInfo } from "./services/qbittorrent/get-transfer-info";
+import { getTorrentList } from "../services/qbittorrent/get-torrent-list";
+import { getTransferInfo } from "../services/qbittorrent/get-transfer-info";
 
 export const downloadRoutes = (server: FastifyInstance) => {
   server.get("/download/list", async (req, res) => {

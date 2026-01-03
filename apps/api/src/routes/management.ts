@@ -1,6 +1,6 @@
 import type { FastifyInstance } from "fastify";
-import { listFiles } from "./files/list-files";
-import { mounts } from "./mounts";
+import { listFiles } from "../files/list-files";
+import { mounts } from "../mounts";
 
 export const managementRoutes = (fastify: FastifyInstance) => {
   fastify.get("/management/mounts", async (req, res) => {

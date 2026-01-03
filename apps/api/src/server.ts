@@ -1,21 +1,9 @@
 import cors from "@fastify/cors";
-import { Apps, Movie, SonarrSeries } from "@repo/global-types";
+import { Apps } from "@repo/global-types";
 import { logger } from "@repo/logger";
 import fastify from "fastify";
 import { FastifySSEPlugin } from "fastify-sse-v2";
-import { DecideSeriesAgent } from "./agents/decide-series";
-import { downloadRoutes } from "./download";
-import { managementRoutes } from "./management";
-import { jellyfinService } from "./services/jellyfin/service";
-import { prowlarrService } from "./services/prowlarr";
-import { radarrService } from "./services/radarr/service";
-import { sonarrService } from "./services/sonarr";
-import { toAiReadableSeries } from "./utils";
-import { AddMovieWorkflow } from "./workflows/add-movie";
-import { AddSeriesWorkflow } from "./workflows/add-series";
-import { MoveFilesWorkflow } from "./workflows/move-files";
-
-const SERIES_CACHE = new Map<string, SonarrSeries[]>();
+import { addRoutes } from "./routes/add-routes";
 
 async function start() {
   const server = fastify();
@@ -25,32 +13,11 @@ async function start() {
   });
 
   await server.register(FastifySSEPlugin);
-  await downloadRoutes(server);
-  await managementRoutes(server);
+
+  await addRoutes(server);
 
   server.get("/health", async (req, res) => {
     res.status(200).send({ message: "OK" });
-  });
-
-  server.get("/agent/add-series", async (req, res) => {
-    const { query, debug } = req.query as { query: string; debug: string };
-
-    const workflow = new AddSeriesWorkflow(res, debug === "true");
-    await workflow.run({ query });
-  });
-
-  server.get("/agent/add-movie", async (req, res) => {
-    const { query } = req.query as { query: string };
-
-    const workflow = new AddMovieWorkflow(res);
-    await workflow.run({ query });
-  });
-
-  server.get("/agent/move-files", async (req, res) => {
-    const { query } = req.query as { query: string };
-
-    const workflow = new MoveFilesWorkflow(res);
-    await workflow.run({ query });
   });
 
   server.get("/apps", async (req, res) => {
@@ -63,99 +30,6 @@ async function start() {
     };
 
     res.status(200).send(apps);
-  });
-
-  server.post("/jellyfin/get-series", async (req, res) => {
-    const {
-      series: { title, alternateTitles },
-    } = req.body as { series: Pick<SonarrSeries, "title" | "alternateTitles"> };
-
-    const series = await jellyfinService.getSeries(
-      title ?? "",
-      alternateTitles?.map((alt) => alt.title ?? "") ?? []
-    );
-
-    if (!series) {
-      return res.status(404).send({ error: "Series not found" });
-    }
-
-    res.header("Cache-Control", "max-age=120, public");
-    res.status(200).send(series);
-  });
-
-  server.post("/jellyfin/get-movie", async (req, res) => {
-    try {
-      const {
-        series: { title, alternateTitles },
-      } = req.body as { series: Pick<Movie, "title" | "alternateTitles"> };
-
-      const movie = await jellyfinService.getMovie(
-        title ?? "",
-        alternateTitles?.map((alt) => alt?.title ?? "") ?? []
-      );
-
-      if (!movie) {
-        return res.status(404).send({ error: "Movie not found" });
-      }
-
-      res.header("Cache-Control", "max-age=120, public");
-      res.status(200).send(movie);
-    } catch (error) {
-      logger.error({ err: error, body: req.body }, "Error in get-movie");
-      res.status(500).send({
-        error: "Internal Server Error",
-        message: error instanceof Error ? error.message : "Unknown error",
-      });
-    }
-  });
-
-  server.get("/sonarr/get-series", async (req, res) => {
-    const series = await sonarrService.getSeries();
-    res.status(200).send(series);
-  });
-
-  server.get("/sonarr/lookup", async (req, res) => {
-    const { query } = req.query as { query: string };
-
-    let series = SERIES_CACHE.get(query);
-
-    if (!series) {
-      series = await sonarrService.lookup(query);
-      SERIES_CACHE.set(query, series);
-    }
-
-    res.status(200).send(series);
-  });
-
-  server.post("/sonarr/decide-series", async (req, res) => {
-    const { series, originalQuery } = req.body as {
-      series: Partial<SonarrSeries>[];
-      originalQuery: string;
-    };
-
-    const decision = await new DecideSeriesAgent().run(
-      JSON.stringify({
-        series: series.splice(0, 10).map((s) => toAiReadableSeries(s)),
-        originalQuery: originalQuery,
-      })
-    );
-
-    res.status(200).send(decision);
-  });
-
-  server.get("/prowlarr/search", async (req, res) => {
-    const { query } = req.query as {
-      query: string;
-    };
-
-    const results = await prowlarrService.search(query);
-
-    res.status(200).send(results);
-  });
-
-  server.get("/radarr/get-movies", async (req, res) => {
-    const movies = await radarrService.getMovies();
-    res.status(200).send(movies);
   });
 
   server.addHook("onResponse", (req, res, done) => {
