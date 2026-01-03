@@ -29,7 +29,7 @@ RUN pnpm install --frozen-lockfile
 # --------------------------------------
 FROM installer AS builder
 COPY --from=pruner /repo/out/full/ .
-RUN pnpm turbo run build --filter=site... --filter=api...
+RUN pnpm turbo run build 
 
 # --------------------------------------
 # Runtime
