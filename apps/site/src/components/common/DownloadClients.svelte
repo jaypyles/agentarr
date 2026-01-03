@@ -2,7 +2,9 @@
 	import Cube from '$components/icons/Cube.svelte';
 	import DashedCube from '$components/icons/DashedCube.svelte';
 	import { api } from '$lib/api';
+	import { apps } from '$stores/apps';
 	import type { Torrent, TransferInfo } from '@repo/global-types';
+	import ConnectedTo from './ConnectedTo.svelte';
 
 	let torrents = $state<Torrent[]>([]);
 	let transferInfo = $state<TransferInfo | null>(null);
@@ -68,7 +70,7 @@
 		} catch (err: any) {
 			console.error('Failed to fetch download data:', err);
 			error = err.response?.data?.message || err.message || 'Failed to fetch download data';
-		} 
+		}
 	};
 
 	$effect(() => {
@@ -82,12 +84,16 @@
 	});
 </script>
 
-<div class="flex h-full flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-sm dark:bg-card/50 dark:shadow-lg overflow-hidden">
+<div
+	class="flex h-full flex-col gap-4 overflow-hidden rounded-lg border border-border bg-card p-6 shadow-sm dark:bg-card/50 dark:shadow-lg"
+>
 	<!-- Header with Transfer Info -->
 	<div class="flex items-center justify-between border-b border-border pb-4 dark:border-border/50">
-		<div>
+		<div class="flex flex-col gap-2">
 			<h2 class="text-xl font-semibold text-card-foreground">Download Client</h2>
-			<p class="text-sm text-muted-foreground">qBittorrent Status</p>
+			<div class="flex items-center gap-2">
+				<ConnectedTo app={$apps.qbittorrent} />
+			</div>
 		</div>
 	</div>
 
@@ -99,7 +105,9 @@
 	{:else if loading && torrents.length === 0}
 		<div class="flex flex-1 items-center justify-center">
 			<div class="text-center">
-				<div class="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted dark:bg-muted/50">
+				<div
+					class="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted dark:bg-muted/50"
+				>
 					<svg
 						xmlns="http://www.w3.org/2000/svg"
 						width="32"
@@ -112,7 +120,9 @@
 						stroke-linejoin="round"
 						class="animate-spin text-muted-foreground"
 					>
-						<path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 1 1 8.8-10.8M22 12.5a10 10 0 1 1-8.8 10.8" />
+						<path
+							d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 1 1 8.8-10.8M22 12.5a10 10 0 1 1-8.8 10.8"
+						/>
 					</svg>
 				</div>
 				<p class="text-sm font-medium text-card-foreground">Loading...</p>
@@ -121,26 +131,32 @@
 	{:else}
 		<!-- Transfer Stats -->
 		{#if transferInfo}
-			<div class="grid grid-cols-2 gap-4 rounded-lg border border-border bg-muted/30 p-4 dark:border-border/50 dark:bg-muted/20">
+			<div
+				class="grid grid-cols-2 gap-4 rounded-lg border border-border bg-muted/30 p-4 dark:border-border/50 dark:bg-muted/20"
+			>
 				<div class="flex flex-col gap-1">
 					<div class="flex items-center gap-2">
-                        <Cube className="text-blue-500" />
+						<Cube className="text-blue-500" />
 						<span class="text-xs font-medium text-muted-foreground">Download</span>
 					</div>
 					<p class="text-lg font-semibold text-card-foreground">
 						{formatSpeed(transferInfo.dl_info_speed)}
 					</p>
-					<p class="text-xs text-muted-foreground">Total: {formatBytes(transferInfo.dl_info_data)}</p>
+					<p class="text-xs text-muted-foreground">
+						Total: {formatBytes(transferInfo.dl_info_data)}
+					</p>
 				</div>
 				<div class="flex flex-col gap-1">
 					<div class="flex items-center gap-2">
-                        <DashedCube className="text-green-500" />
+						<DashedCube className="text-green-500" />
 						<span class="text-xs font-medium text-muted-foreground">Upload</span>
 					</div>
 					<p class="text-lg font-semibold text-card-foreground">
 						{formatSpeed(transferInfo.up_info_speed)}
 					</p>
-					<p class="text-xs text-muted-foreground">Total: {formatBytes(transferInfo.up_info_data)}</p>
+					<p class="text-xs text-muted-foreground">
+						Total: {formatBytes(transferInfo.up_info_data)}
+					</p>
 				</div>
 			</div>
 		{/if}
@@ -159,7 +175,7 @@
 							<div
 								class="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-muted dark:bg-muted/50"
 							>
-                            <Cube className="text-muted-foreground dark:text-muted-foreground/70 size-8" />
+								<Cube className="text-muted-foreground dark:text-muted-foreground/70 size-8" />
 							</div>
 							<p class="text-sm font-medium text-card-foreground">No torrents</p>
 							<p class="mt-1 text-xs text-muted-foreground">No active downloads</p>
@@ -177,7 +193,9 @@
 										<h4 class="truncate font-medium text-card-foreground">{torrent.name}</h4>
 										<div class="mt-1 flex items-center gap-2">
 											<span
-												class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {getStateColor(torrent.state)}"
+												class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium {getStateColor(
+													torrent.state
+												)}"
 											>
 												{torrent.state}
 											</span>

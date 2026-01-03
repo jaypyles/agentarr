@@ -3,4 +3,5 @@ export type Apps = {
   radarr: string;
   prowlarr: string;
   jellyfin: string;
+  qbittorrent: string;
 };

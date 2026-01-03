@@ -29,9 +29,9 @@ async function start() {
   await managementRoutes(server);
 
   server.get("/agent/add-series", async (req, res) => {
-    const { query } = req.query as { query: string };
+    const { query, debug } = req.query as { query: string; debug: string };
 
-    const workflow = new AddSeriesWorkflow(res);
+    const workflow = new AddSeriesWorkflow(res, debug === "true");
     await workflow.run({ query });
   });
 
@@ -55,6 +55,7 @@ async function start() {
       radarr: process.env.RADARR_URL ?? "",
       prowlarr: process.env.PROWLARR_URL ?? "",
       jellyfin: process.env.JELLYFIN_URL ?? "",
+      qbittorrent: process.env.QB_URL ?? "",
     };
 
     res.status(200).send(apps);

@@ -1,15 +1,18 @@
 <script lang="ts">
 	import Agents from '$components/common/Agents.svelte';
+	import ConnectedTo from '$components/common/ConnectedTo.svelte';
 	import DownloadClients from '$components/common/DownloadClients.svelte';
 	import Management from '$components/common/Management.svelte';
 	import MovieCard from '$components/common/MovieCard.svelte';
 	import SeriesCard from '$components/common/SeriesCard.svelte';
+	import Settings from '$components/common/Settings.svelte';
 	import Download from '$components/icons/Download.svelte';
 	import Gear from '$components/icons/Gear.svelte';
 	import Movies from '$components/icons/Movies.svelte';
 	import Person from '$components/icons/Person.svelte';
 	import Tv from '$components/icons/Tv.svelte';
 	import * as Sidebar from '$lib/components/ui/sidebar';
+	import { apps } from '$stores/apps';
 	import type { Mounts, Movie, SonarrSeries } from '@repo/global-types';
 	let { series, movies, mounts }: { series: SonarrSeries[]; movies: Movie[]; mounts: Mounts } =
 		$props();
@@ -98,7 +101,9 @@
 					</button>
 				</Sidebar.Group>
 			</Sidebar.Content>
-			<Sidebar.Footer />
+			<Sidebar.Footer>
+				<Settings />
+			</Sidebar.Footer>
 		</Sidebar.Root>
 	</Sidebar.Provider>
 
@@ -107,6 +112,10 @@
 			<div
 				class="h-full rounded-md border border-border bg-card dark:border-border/50 dark:bg-card/50"
 			>
+				<div class="px-4 py-2">
+					<ConnectedTo app={$apps.sonarr} />
+				</div>
+
 				<div class="grid grid-cols-6 gap-4 overflow-auto p-4">
 					{#each series as s}
 						<SeriesCard series={s} />
@@ -119,6 +128,10 @@
 			<div
 				class="h-full rounded-md border border-border bg-card dark:border-border/50 dark:bg-card/50"
 			>
+				<div class="px-4 py-2">
+					<ConnectedTo app={$apps.radarr} />
+				</div>
+
 				<div class="grid grid-cols-6 gap-4 overflow-auto p-4">
 					{#each movies as m}
 						<MovieCard movie={m} />

@@ -1,7 +1,10 @@
 <script lang="ts">
 	import Button from '$lib/components/ui/button/button.svelte';
+	import type { Agent } from '$lib/types';
+	import { agentLogStore } from '$stores/agent-log';
+	import { settings } from '$stores/settings';
+	import RawDataViewer from './RawDataViewer.svelte';
 
-	const log = $state<any[]>([]);
 	let query = $state('');
 	let source: EventSource | null = null;
 
@@ -10,20 +13,26 @@
 	const fileName = $derived(urlParams.get('fileName') || '');
 
 	let activeAgent = $state<string>('series');
+	let log = $state<any[]>($agentLogStore.series);
+
 	const setActiveAgent = (agent: string) => {
 		activeAgent = agent;
+		log = $agentLogStore[agent as Agent];
 	};
 
 	const getAgentUrl = (agent: string) => {
-		const apiUrl = '/stream'
+		const debug = $settings.debug;
+		console.log('debug', debug);
+		let apiUrl = '/stream';
+		let debugParam = debug ? 'debug=true&' : '';
 
 		switch (agent) {
 			case 'series':
-				return `${apiUrl}/agent/add-series?query=`;
+				return `${apiUrl}/agent/add-series?${debugParam}query=`;
 			case 'movie':
-				return `${apiUrl}/agent/add-movie?query=`;
+				return `${apiUrl}/agent/add-movie?${debugParam}query=`;
 			case 'management':
-				return `${apiUrl}/agent/move-files?query=`;
+				return `${apiUrl}/agent/move-files?${debugParam}query=`;
 		}
 	};
 
@@ -34,13 +43,11 @@
 		// Close old connection if any
 		source?.close();
 
-		source = new EventSource(
-			`${getAgentUrl(activeAgent)}` +
-				encodeURIComponent(query)
-		);
+		source = new EventSource(`${getAgentUrl(activeAgent)}` + encodeURIComponent(query));
 
 		source.onmessage = (event) => {
 			const data = JSON.parse(event.data);
+			agentLogStore.addLog(activeAgent as Agent, data);
 			log.push(data);
 
 			// Auto-close when workflow ends
@@ -208,7 +215,8 @@
 					variant="ghost"
 					size="sm"
 					onclick={() => {
-						log.length = 0;
+						agentLogStore.clearLog(activeAgent as Agent);
+						log = $agentLogStore[activeAgent as Agent];
 					}}
 				>
 					Clear
@@ -271,8 +279,16 @@
 									</svg>
 								</div>
 							</div>
+
 							<div class="min-w-0 flex-1">
-								<p class="text-sm leading-relaxed text-card-foreground">{l.message}</p>
+								<div class="flex items-center justify-between gap-2">
+									<p class="text-sm leading-relaxed text-card-foreground">{l.message}</p>
+
+									{#if $settings.debug && l.raw}
+										<RawDataViewer data={l.raw} />
+									{/if}
+								</div>
+
 								{#if l.status}
 									<div class="mt-2 flex items-center gap-2">
 										<span

@@ -7,7 +7,8 @@ function createAppsStore() {
 		sonarr: '',
 		radarr: '',
 		prowlarr: '',
-		jellyfin: ''
+		jellyfin: '',
+		qbittorrent: ''
 	});
 
 	let loaded = false;

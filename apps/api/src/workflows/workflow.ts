@@ -9,10 +9,12 @@ export type Step = {
 };
 
 export abstract class Workflow {
+  debug: boolean = false;
   public readonly name: string;
   public steps: Step[] = [];
 
-  constructor(name: string) {
+  constructor(name: string, debug: boolean = false) {
+    this.debug = debug;
     this.name = name;
   }
 

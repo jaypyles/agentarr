@@ -14,8 +14,8 @@ export class AddSeriesWorkflow extends Workflow {
   res: FastifyReply;
   private foundSeriesCache: SonarrSeries[] | undefined;
 
-  constructor(res: FastifyReply) {
-    super("Add Series Workflow");
+  constructor(res: FastifyReply, debug: boolean = false) {
+    super("Add Series Workflow", debug);
     this.res = res;
   }
 
@@ -61,6 +61,7 @@ export class AddSeriesWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: "Generated search query: " + `"${searchQuery}"`,
+      ...(this.debug ? { raw: response } : {}),
     });
 
     return response;
@@ -72,6 +73,7 @@ export class AddSeriesWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: "Looking up series for " + `"${searchQuery}"`,
+      ...(this.debug ? { raw: searchQuery } : {}),
     });
 
     const series = await sonarrService.lookup(searchQuery);
@@ -83,9 +85,13 @@ export class AddSeriesWorkflow extends Workflow {
     series: SonarrSeries[],
     originalQuery: string
   ): Promise<any> {
+    const seriesToDecide = series
+      .slice(0, 10)
+      .map((s) => toAiReadableSeries(s));
+
     const decision = await new DecideSeriesAgent().run<SonarrSeries>(
       JSON.stringify({
-        series: series.slice(0, 10).map((s) => toAiReadableSeries(s)),
+        series: seriesToDecide,
         originalQuery: originalQuery,
       })
     );
@@ -93,6 +99,7 @@ export class AddSeriesWorkflow extends Workflow {
     this.send(this.res, {
       status: "progress",
       message: "Decided on series: " + `"${decision.title}"`,
+      ...(this.debug ? { raw: { decision, series: seriesToDecide } } : {}),
     });
 
     return decision;
@@ -110,12 +117,18 @@ export class AddSeriesWorkflow extends Workflow {
       throw new Error("Series not found");
     }
 
+    if (this.debug) {
+      // no-op
+      return;
+    }
+
     try {
       const response = await sonarrService.addSeries(foundSeries, options);
 
       this.send(this.res, {
         status: "progress",
         message: "Series added to Sonarr: " + `"${foundSeries.title}"`,
+        ...(this.debug ? { raw: response } : {}),
       });
 
       return response;
@@ -144,6 +157,7 @@ export class AddSeriesWorkflow extends Workflow {
     await this.send(this.res, {
       status: "progress",
       message: `Searching prowlarr for "${searchTerm}"`,
+      ...(this.debug ? { raw: searchTerm } : {}),
     });
 
     const prowlarrSeries = await this.getProwlarrSeries(searchTerm);
@@ -153,7 +167,13 @@ export class AddSeriesWorkflow extends Workflow {
     await this.send(this.res, {
       status: "progress",
       message: `Adding "${prowlarrSeries.title}" to download client`,
+      ...(this.debug ? { raw: prowlarrSeries } : {}),
     });
+
+    if (this.debug) {
+      // no-op
+      return;
+    }
 
     const downloadedSeries = await this.downloadProwlarrSeries(
       prowlarrSeries.guid,
@@ -189,7 +209,10 @@ export class AddSeriesWorkflow extends Workflow {
   }
 
   public async run(args: { query: string }): Promise<any> {
-    await this.send(this.res, { status: "started", message: "Starting workflow" });
+    await this.send(this.res, {
+      status: "started",
+      message: "Starting workflow",
+    });
 
     let decision: SonarrSeries | string | undefined;
     const originalQuery = args.query;

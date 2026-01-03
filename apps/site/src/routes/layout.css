@@ -46,6 +46,9 @@ body {
 	--sidebar-accent-foreground: oklch(0.208 0.042 265.755);
 	--sidebar-border: oklch(0.929 0.013 255.508);
 	--sidebar-ring: oklch(0.704 0.04 256.788);
+
+	--bg-accent: #3c6ca8;
+	--inspect-font-size: 16px;
 }
 
 .dark {
@@ -80,6 +83,8 @@ body {
 	--sidebar-accent-foreground: oklch(0.984 0.003 247.858);
 	--sidebar-border: oklch(1 0 0 / 10%);
 	--sidebar-ring: oklch(0.551 0.027 264.364);
+
+	--bg-accent: #3c6ca8;
 }
 
 @theme inline {
@@ -118,6 +123,7 @@ body {
 	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
+	--color-bg-accent: var(--bg-accent);
 }
 
 @layer base {

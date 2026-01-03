@@ -54,6 +54,8 @@
 	"dependencies": {
 		"@iconify/tailwind4": "^1.2.0",
 		"axios": "^1.13.2",
-		"shadcn-svelte": "^1.1.0"
+		"shadcn-svelte": "^1.1.0",
+		"svelte-inspect-value": "^0.10.0",
+		"svelte-persisted-store": "^0.12.0"
 	}
 }
