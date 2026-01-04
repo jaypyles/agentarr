@@ -4,6 +4,10 @@
 
 Agentarr is an AI-powered media management application that integrates with popular media automation tools like Sonarr, Radarr, Prowlarr, and Jellyfin. It provides an intelligent interface for managing your media library with AI agents that can automatically add series, movies, and organize files.
 
+<div align="center">
+  <img src="docs/workflow.png" alt="Agentarr Workflow" />
+</div>
+
 ## Features
 
 - 🤖 **AI-Powered Agents**: Automatically add series and movies using natural language queries
