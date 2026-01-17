@@ -17,6 +17,7 @@ export class AddMovieWorkflow extends Workflow {
   debug: boolean = false;
   res: FastifyReply;
   foundMoviesCache: Movie[] | undefined;
+  usersOriginalQuery: string = "";
 
   constructor(res: FastifyReply, debug: boolean = false) {
     super("Add Movie Workflow");
@@ -141,7 +142,7 @@ export class AddMovieWorkflow extends Workflow {
       .sort((a, b) => b.seeders - a.seeders)
       .slice(0, 10);
 
-    const decision = await new DecideProwlarrEntryAgent().run<ProwlarrDecision>(
+    const decision = await new DecideProwlarrEntryAgent(this.usersOriginalQuery).run<ProwlarrDecision>(
       JSON.stringify({
         movies: moviesToDecide,
         originalQuery: originalQuery,
@@ -174,6 +175,8 @@ export class AddMovieWorkflow extends Workflow {
   }
 
   public async run(args: { query: string }): Promise<any> {
+    this.usersOriginalQuery = args.query;
+
     try {
       await this.send(this.res, {
         status: "started",
