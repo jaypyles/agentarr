@@ -13,6 +13,7 @@ import { Workflow } from "../workflow";
 export class AddSeriesWorkflow extends Workflow {
   res: FastifyReply;
   private foundSeriesCache: SonarrSeries[] | undefined;
+  private usersOriginalQuery: string = "";
 
   constructor(res: FastifyReply, debug: boolean = false) {
     super("Add Series Workflow", debug);
@@ -188,7 +189,7 @@ export class AddSeriesWorkflow extends Workflow {
       .sort((a, b) => b.seeders - a.seeders)
       .slice(0, 15);
 
-    const agent = new DecideProwlarrEntryAgent();
+    const agent = new DecideProwlarrEntryAgent(this.usersOriginalQuery);
 
     const decision = await agent.run(
       JSON.stringify({
@@ -209,6 +210,8 @@ export class AddSeriesWorkflow extends Workflow {
   }
 
   public async run(args: { query: string }): Promise<any> {
+    this.usersOriginalQuery = args.query;
+
     await this.send(this.res, {
       status: "started",
       message: "Starting workflow",

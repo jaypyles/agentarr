@@ -1,7 +1,12 @@
 import { Agent } from "../agent";
 
-const basePrompt = `
+const basePrompt = (userQuery: string) => `
 You will decide what prowlarr entry should be added to the app based on the user's query and the prowlarr entry provided.
+The user query will be used to specify any particular types of prowlarr entries they are looking for.
+
+<user-query>
+${userQuery}
+</user-query>
 
 <preferences>
 Prefer mid size files over large files. 
@@ -22,7 +27,7 @@ Here is the example format of the JSON object:
 `;
 
 export class DecideProwlarrEntryAgent extends Agent {
-  constructor() {
-    super("DecideProwlarrEntryAgent", basePrompt);
+  constructor(userQuery: string) {
+    super("DecideProwlarrEntryAgent", basePrompt(userQuery));
   }
 }
