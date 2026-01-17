@@ -53,7 +53,7 @@ export class AddSeriesWorkflow extends Workflow {
       })
     );
 
-    const searchQuery = `${response.searchQuery} ${response.season ? `S${response.season < 10 ? "0" : ""}${response.season}` : ""} ${response.episodes ? `E${response.episodes.map((e) => (e < 10 ? "0" : "")).join(",")}` : ""}`;
+    const searchQuery = `${response.searchQuery} ${response.season ? `S${response.season < 10 ? "0" : ""}${response.season}` : ""} ${response.episodes ? `E${response.episodes.map((e) => `${e < 10 ? "0" : ""}${e}`).join(",")}` : ""}`;
 
     const log = `${BOLD}[AI] - Generated search query: ${RESET}${searchQuery}`;
     logger.info(log);
