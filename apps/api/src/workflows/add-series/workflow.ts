@@ -226,6 +226,11 @@ export class AddSeriesWorkflow extends Workflow {
       decision = `${searchQuery.searchQuery} ${seasonPart}`;
 
       if (searchQuery.alreadyInLibrary) {
+        await this.send(this.res, {
+          status: "info",
+          message: `User already has ${searchQuery.searchQuery} in library, not adding to Sonarr.`
+        })
+
         logger.info(
           "User already has series in their library, not adding to Sonarr."
         );
@@ -244,7 +249,7 @@ export class AddSeriesWorkflow extends Workflow {
 
       if (searchQuery.episodes) {
         await this.addEpisodes(
-          searchQuery.title,
+          { title: searchQuery.searchQuery },
           searchQuery.season,
           searchQuery.episodes
         );
