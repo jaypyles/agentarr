@@ -15,10 +15,16 @@ const isSessionExpiredError = (error: any): boolean => {
   const errorMessage = String(error.message || error).toLowerCase();
   const statusCode = error.statusCode || error.status || error.response?.status;
   
+  // Extract status codes from error message (e.g., "HTTP request error: 403")
+  const statusCodeMatch = errorMessage.match(/\b(401|403)\b/);
+  const extractedStatusCode = statusCodeMatch && statusCodeMatch[1] ? parseInt(statusCodeMatch[1]) : null;
+  
   // Check for common session expiration indicators
   return (
     statusCode === 401 ||
     statusCode === 403 ||
+    extractedStatusCode === 401 ||
+    extractedStatusCode === 403 ||
     errorMessage.includes("unauthorized") ||
     errorMessage.includes("forbidden") ||
     errorMessage.includes("session") ||
