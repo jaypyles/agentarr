@@ -29,7 +29,7 @@
 		"dotenv": "^17.2.3",
 		"fastify": "^5.6.2",
 		"fastify-sse-v2": "^4.2.1",
-		"qbittorrent-api-v2": "^1.2.2",
+  		"qbittorrent-api-v2": "github:flowbe/node-qbittorrent-api-v2",
 		"ts-node": "^10.9.2"
 	}
 }

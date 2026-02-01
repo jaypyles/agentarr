@@ -9,6 +9,7 @@
 	let torrents = $state<Torrent[]>([]);
 	let transferInfo = $state<TransferInfo | null>(null);
 	let loading = $state(false);
+	let clearing = $state(false);
 	let error = $state<string | null>(null);
 	let refreshInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -60,6 +61,7 @@
 
 	const fetchData = async () => {
 		try {
+			loading = true;
 			error = null;
 			const [torrentsRes, transferInfoRes] = await Promise.all([
 				api.get('/download/list'),
@@ -70,6 +72,23 @@
 		} catch (err: any) {
 			console.error('Failed to fetch download data:', err);
 			error = err.response?.data?.message || err.message || 'Failed to fetch download data';
+		} finally {
+			loading = false;
+		}
+	};
+
+	const clearTorrents = async () => {
+		if (clearing) return;
+		try {
+			clearing = true;
+			error = null;
+			await api.delete('/download/torrents');
+			await fetchData();
+		} catch (err: any) {
+			console.error('Failed to clear torrents:', err);
+			error = err.response?.data?.message || err.message || 'Failed to clear torrents';
+		} finally {
+			clearing = false;
 		}
 	};
 
@@ -85,12 +104,42 @@
 </script>
 
 <div
-	class="flex h-full flex-col gap-4 overflow-hidden rounded-lg border border-border bg-card p-6 shadow-sm dark:bg-card/50 dark:shadow-lg"
+	class="flex h-full w-full flex-col gap-4 overflow-hidden rounded-lg border border-border bg-card p-6 shadow-sm dark:bg-card/50 dark:shadow-lg"
 >
 	<!-- Header with Transfer Info -->
 	<div class="flex items-center justify-between border-b border-border pb-4 dark:border-border/50">
-		<div class="flex flex-col gap-2">
-			<h2 class="text-xl font-semibold text-card-foreground">Download Client</h2>
+		<div class="flex w-full flex-col gap-2">
+			<div class="flex w-full justify-between">
+				<h2 class="text-xl font-semibold text-card-foreground">Download Client</h2>
+				<button
+					type="button"
+					class="inline-flex cursor-pointer items-center gap-2 rounded-md border border-solid bg-muted px-3 py-1 hover:bg-muted-foreground/20 disabled:cursor-not-allowed disabled:opacity-50"
+					disabled={clearing}
+					onclick={clearTorrents}
+				>
+					{#if clearing}
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="14"
+							height="14"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							class="animate-spin"
+						>
+							<path
+								d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 8.8-10.8M22 12.5a10 10 0 0 1-8.8 10.8"
+							/>
+						</svg>
+						Clearing...
+					{:else}
+						Clear
+					{/if}
+				</button>
+			</div>
 			<div class="flex items-center gap-2">
 				<ConnectedTo app={$apps.qbittorrent} />
 			</div>

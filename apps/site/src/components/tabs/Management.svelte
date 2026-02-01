@@ -98,13 +98,14 @@
 </script>
 
 <div
-	class="flex h-full flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-sm dark:bg-card/50 dark:shadow-lg overflow-hidden"
+	class="flex h-full min-w-0 flex-1 flex-col gap-4 overflow-hidden rounded-lg border border-border bg-card p-6 shadow-sm dark:bg-card/50 dark:shadow-lg"
 >
 	<!-- Mount Points -->
 	<div class="flex flex-wrap gap-2 border-b border-border pb-4">
 		<button
 			onclick={() => navigateToPath(mounts.tv)}
-			class="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted-foreground/10 {currentPath === mounts.tv
+			class="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted-foreground/10 {currentPath ===
+			mounts.tv
 				? 'bg-muted-foreground/20'
 				: ''}"
 		>
@@ -113,7 +114,8 @@
 		</button>
 		<button
 			onclick={() => navigateToPath(mounts.movies)}
-			class="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted-foreground/10 {currentPath === mounts.movies
+			class="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted-foreground/10 {currentPath ===
+			mounts.movies
 				? 'bg-muted-foreground/20'
 				: ''}"
 		>
@@ -122,7 +124,8 @@
 		</button>
 		<button
 			onclick={() => navigateToPath(mounts.downloads)}
-			class="flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted-foreground/10 {currentPath === mounts.downloads
+			class="flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors hover:bg-muted-foreground/10 {currentPath ===
+			mounts.downloads
 				? 'bg-muted-foreground/20'
 				: ''}"
 		>
@@ -136,7 +139,7 @@
 		<button
 			onclick={navigateBack}
 			disabled={pathHistory.length <= 1}
-			class="flex items-center gap-1 rounded px-2 py-1 transition-colors hover:bg-muted-foreground/10 disabled:opacity-50 disabled:cursor-not-allowed"
+			class="flex items-center gap-1 rounded px-2 py-1 transition-colors hover:bg-muted-foreground/10 disabled:cursor-not-allowed disabled:opacity-50"
 		>
 			← Back
 		</button>
@@ -175,7 +178,10 @@
 								: 'text-muted-foreground'}"
 						/>
 						<span class="flex-1 truncate font-medium">{file.name}</span>
-						<FileSymlink class="h-5 w-5 shrink-0 text-muted-foreground" onclick={(e: MouseEvent) => handleClickMoveIcon(file.name, e)} />
+						<FileSymlink
+							class="h-5 w-5 shrink-0 text-muted-foreground"
+							onclick={(e: MouseEvent) => handleClickMoveIcon(file.name, e)}
+						/>
 						{#if file.isFile}
 							<span class="text-xs text-muted-foreground">{getFileExtension(file.name)}</span>
 						{/if}

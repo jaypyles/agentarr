@@ -112,10 +112,10 @@
 	});
 </script>
 
-<div class="flex h-full flex-col gap-6 overflow-hidden">
+<div class="flex h-full min-w-0 flex-1 flex-col gap-6 overflow-hidden">
 	<!-- Input Section -->
 	<div
-		class="flex flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-sm dark:bg-card/50 dark:shadow-lg"
+		class="flex w-full flex-col gap-4 rounded-lg border border-border bg-card p-6 shadow-sm dark:bg-card/50 dark:shadow-lg"
 	>
 		<div class="flex items-center gap-3">
 			<div

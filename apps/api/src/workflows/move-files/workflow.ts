@@ -2,6 +2,7 @@ import { DecideSeriesOrMovieAgent } from "@/agents/decide-series-or-movie/agent"
 import { GetDownloadPathAgent } from "@/agents/get-download-path";
 import { GetImportCommandAgent } from "@/agents/get-import-command";
 import { createDirectory } from "@/files/create-directory";
+import { flattenFilePaths } from "@/files/flatten-file-paths";
 import { listFiles } from "@/files/list-files";
 import { moveFile } from "@/files/move-file";
 import { mounts } from "@/mounts";
@@ -36,9 +37,12 @@ export class MoveFilesWorkflow extends Workflow {
   }
 
   private async getMoveFilesInstructions() {
-    const files = await listFiles(mounts.downloads ?? "");
-    const seriesFiles = files.filter((file) => file.name.includes("S"));
-    const movieFiles = files.filter((file) => !file.name.includes("S"));
+    const files = await listFiles(mounts.downloads ?? "", true);
+    const seriesFiles = await listFiles(mounts.tv, false);
+    const movieFiles = await listFiles(mounts.movies, false);
+    const flatPaths = flattenFilePaths(files);
+    const flatSeriesPaths = flattenFilePaths(seriesFiles);
+    const flatMoviePaths = flattenFilePaths(movieFiles);
 
     const query = `
     <user-query>
@@ -50,17 +54,32 @@ export class MoveFilesWorkflow extends Workflow {
     </users-mounts>
 
     <downloaded-files>
-    ${files.map((file) => file.name).join("\n")}
+    (Top-level items; media files inside folders are listed below.)
+    ${files.map((f) => f.name).join("\n")}
+
+    All available file paths (use these for sourcePaths):
+    ${flatPaths.map((f) => f.path).join("\n")}
     </downloaded-files>
 
     <series-files>
-    ${seriesFiles.map((file) => file.name).join("\n")}
+    ${seriesFiles.map((f) => f.name).join("\n")}
+
+    Series file paths (use for sourcePaths when moving series):
+    ${flatSeriesPaths.map((f) => f.path).join("\n")}
     </series-files>
 
     <movie-files>
-    ${movieFiles.map((file) => file.name).join("\n")}
+    ${movieFiles.map((f) => f.name).join("\n")}
+
+    Movie file paths (use for sourcePaths when moving movies):
+    ${flatMoviePaths.map((f) => f.path).join("\n")}
     </movie-files>
     `;
+
+    logger.info(
+      { query: JSON.stringify(query, null, 2) },
+      "Move files instruction query"
+    );
 
     const response = await new GetDownloadPathAgent().run<MoveFilesResponse>(
       JSON.stringify({
@@ -191,6 +210,8 @@ export class MoveFilesWorkflow extends Workflow {
     ${JSON.stringify(files)}
     </files>
     `;
+
+    logger.info({ args }, "Move files workflow args");
 
     const importCommand =
       await new GetImportCommandAgent().run<SonarrManualImportCommand>(args);
