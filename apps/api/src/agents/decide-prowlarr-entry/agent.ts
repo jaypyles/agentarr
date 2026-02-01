@@ -9,11 +9,12 @@ ${userQuery}
 </user-query>
 
 <preferences>
-Prefer mid size files over large files. 
-The title will sometimes be sent with a season, etc. if not season is provided, then use Season 1.
-Prefer high levels of seeders over low levels of seeders, which is more important than the size of the file.
-Always try to look for 1080p files over 720p, 1440p, and 4k files.
-For anime, prefer dual audio versions/multi-sub versions.
+- Prefer mid size files over large files. 
+- The title will sometimes be sent with a season, etc. if not season is provided, then use Season 1.
+- Prefer high levels of seeders over low levels of seeders, which is more important than the size of the file.
+- Always try to look for 1080p files over 720p, 1440p, and 4k files.
+- For anime, first look for dual audio versions, then multi-sub versions.
+- Dual audio (english/jap) always takes priority over multi-sub.
 </preferences>
 
 Return a JSON object of the prowlarr entry that should be added to the app.
