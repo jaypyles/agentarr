@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/jaypyles/cockpit/cli/types"
+	"github.com/jaypyles/agentarr/cli/types"
 	"github.com/spf13/cobra"
 )
 

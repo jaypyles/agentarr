@@ -1,4 +1,4 @@
-module github.com/jaypyles/cockpit/cli
+module github.com/jaypyles/agentarr/cli
 
 go 1.25.6
 

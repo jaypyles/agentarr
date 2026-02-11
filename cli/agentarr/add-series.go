@@ -1,7 +1,7 @@
 package agentarr
 
 import (
-	"github.com/jaypyles/cockpit/cli/api"
+	"github.com/jaypyles/agentarr/cli/api"
 	"github.com/spf13/cobra"
 )
 

@@ -3,8 +3,8 @@ package agentarr
 import (
 	"fmt"
 
-	"github.com/jaypyles/cockpit/cli/api"
-	"github.com/jaypyles/cockpit/cli/types"
+	"github.com/jaypyles/agentarr/cli/api"
+	"github.com/jaypyles/agentarr/cli/types"
 	"github.com/spf13/cobra"
 )
 
