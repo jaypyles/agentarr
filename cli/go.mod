@@ -1,6 +1,6 @@
-module github.com/jaypyles/cockpit/cli
+module github.com/jaypyles/agentarr/cli
 
-go 1.25.6
+go 1.25
 
 require (
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
