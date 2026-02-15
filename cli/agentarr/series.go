@@ -9,8 +9,8 @@ var seriesCmd = cobra.Command{
 	Use:   "series",
 	Short: "Get Series",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return handlers.GetSeries()
-
+		handlers.GetSeries()
+		return nil
 	},
 }
 

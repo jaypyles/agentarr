@@ -7,15 +7,15 @@ import (
 	"github.com/jaypyles/agentarr/cli/types"
 )
 
-func GetMovies() error {
-	series, err := api.MakeAPIRequest[[]types.Movie]("/api/radarr/get-movies")
+func GetMovies() []types.Movie {
+	movies, err := api.MakeAPIRequest[[]types.Movie]("/api/radarr/get-movies")
 	if err != nil {
 		return nil
 	}
 
-	for _, s := range series {
-		fmt.Println(s.Title)
+	for _, m := range movies {
+		fmt.Println(m.Title)
 	}
 
-	return nil
+	return movies
 }

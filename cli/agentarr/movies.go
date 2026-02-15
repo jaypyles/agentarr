@@ -9,7 +9,8 @@ var movieCmd = cobra.Command{
 	Use:   "movies",
 	Short: "Get Movies",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return handlers.GetMovies()
+		handlers.GetMovies()
+		return nil
 	},
 }
 

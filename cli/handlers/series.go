@@ -7,7 +7,7 @@ import (
 	"github.com/jaypyles/agentarr/cli/types"
 )
 
-func GetSeries() error {
+func GetSeries() []types.Series {
 	series, err := api.MakeAPIRequest[[]types.Series]("/api/sonarr/get-series")
 	if err != nil {
 		return nil
@@ -17,5 +17,5 @@ func GetSeries() error {
 		fmt.Println(s.Title)
 	}
 
-	return nil
+	return series
 }
