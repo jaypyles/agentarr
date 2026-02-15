@@ -8,7 +8,7 @@ import (
 )
 
 func GetSeries() []types.Series {
-	series, err := api.MakeAPIRequest[[]types.Series]("/api/sonarr/get-series")
+	series, err := api.MakeAPIRequest[[]types.Series]("/api/sonarr/get-series", "")
 	if err != nil {
 		return nil
 	}

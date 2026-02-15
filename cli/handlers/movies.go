@@ -8,7 +8,7 @@ import (
 )
 
 func GetMovies() []types.Movie {
-	movies, err := api.MakeAPIRequest[[]types.Movie]("/api/radarr/get-movies")
+	movies, err := api.MakeAPIRequest[[]types.Movie]("/api/radarr/get-movies", "")
 	if err != nil {
 		return nil
 	}

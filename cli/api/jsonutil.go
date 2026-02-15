@@ -25,10 +25,15 @@ func DecodeJSONFromReader[T any](r io.Reader) (T, error) {
 	return result, err
 }
 
-func MakeAPIRequest[T any](endpoint string) (T, error) {
+func MakeAPIRequest[T any](endpoint string, method string) (T, error) {
+	var requestMethod string = "GET"
 	var result T
 
-	req, err := http.NewRequest("GET", apiUrl+endpoint, nil)
+	if method != "" {
+		requestMethod = method
+	}
+
+	req, err := http.NewRequest(requestMethod, apiUrl+endpoint, nil)
 	if err != nil {
 		return result, err
 	}
@@ -38,7 +43,6 @@ func MakeAPIRequest[T any](endpoint string) (T, error) {
 		return result, err
 	}
 	defer resp.Body.Close()
-
 
 	result, err = DecodeJSONFromReader[T](resp.Body)
 
