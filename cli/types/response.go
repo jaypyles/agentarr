@@ -8,7 +8,6 @@ type Movie struct {
 	Title string `json:"title"`
 }
 
-// AgentStreamEvent is the payload shape emitted by the API agent SSE endpoints.
 type AgentStreamEvent struct {
 	Status  string `json:"status"`
 	Message string `json:"message"`
