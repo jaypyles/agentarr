@@ -12,7 +12,7 @@ const SERIES_CACHE = new SimpleCache<Record<string, any>>(300000);
 const MOVIE_CACHE = new SimpleCache<Record<string, any>>(300000);
 
 const getCacheKey = (
-  series: Pick<SonarrSeries, "title" | "alternateTitles">[]
+  series: Pick<SonarrSeries, "title" | "alternateTitles">[],
 ): string => {
   const normalized = series
     .map((s) => ({
@@ -67,6 +67,19 @@ export const jellyfinRoutes = async (server: FastifyInstance) => {
       }
 
       res.status(200).send(movieObject);
+    } catch (error) {
+      logger.error({ err: error, body: req.body }, "Error in get-movie");
+      res.status(500).send({
+        error: "Internal Server Error",
+        message: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  });
+
+  server.post("/jellyfin/scan-library", async (req, res) => {
+    try {
+      await jellyfinService.scanLibrary();
+      res.status(200).send({ message: "Library scan started." });
     } catch (error) {
       logger.error({ err: error, body: req.body }, "Error in get-movie");
       res.status(500).send({
