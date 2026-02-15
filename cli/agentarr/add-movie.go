@@ -2,6 +2,7 @@ package agentarr
 
 import (
 	"github.com/jaypyles/agentarr/cli/api"
+	"github.com/jaypyles/agentarr/cli/handlers"
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +13,7 @@ var addMovieCmd = cobra.Command{
 	Use:   "add-movie",
 	Short: "Add Movie",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return api.SendToAgent("/stream/agent/add-movie", movieQuery, movieDebug)
+		return handlers.AddMovie(movieQuery, movieDebug)
 	},
 }
 

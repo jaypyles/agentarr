@@ -2,6 +2,7 @@ package agentarr
 
 import (
 	"github.com/jaypyles/agentarr/cli/api"
+	"github.com/jaypyles/agentarr/cli/handlers"
 	"github.com/spf13/cobra"
 )
 
@@ -13,7 +14,7 @@ var addSeriesCmd = &cobra.Command{
 	Short: "Add Series",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		api.AddAgentArgs(cmd, &query, &debug)
-		return api.SendToAgent("/stream/agent/add-series", query, debug)
+		return handlers.AddSeries(query, debug)
 	},
 }
 

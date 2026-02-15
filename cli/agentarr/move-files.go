@@ -2,6 +2,7 @@ package agentarr
 
 import (
 	"github.com/jaypyles/agentarr/cli/api"
+	"github.com/jaypyles/agentarr/cli/handlers"
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +13,7 @@ var moveFilesCmd = &cobra.Command{
 	Use:   "move-files",
 	Short: "Move Files",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		return api.SendToAgent("/stream/agent/move-files", moveFilesQuery, moveFilesDebug)
+		return handlers.MoveFiles(moveFilesQuery, moveFilesDebug)
 	},
 }
 
