@@ -6,12 +6,22 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/tmaxmax/go-sse"
 )
 
-var apiUrl = "https://agentarr.jaydenpyles.dev"
+func getApiUrl() string {
+	var apiUrl string = os.Getenv("API_URL")
+
+	if apiUrl == "" {
+		return "https://agentarr.jaydenpyles.dev"
+	}
+
+	return apiUrl
+}
+
 var streamingHTTPClient = &http.Client{
 	Transport: &http.Transport{
 		Proxy:              http.ProxyFromEnvironment,
@@ -33,7 +43,7 @@ func MakeAPIRequest[T any](endpoint string, method string) (T, error) {
 		requestMethod = method
 	}
 
-	req, err := http.NewRequest(requestMethod, apiUrl+endpoint, nil)
+	req, err := http.NewRequest(requestMethod, getApiUrl()+endpoint, nil)
 	if err != nil {
 		return result, err
 	}
@@ -54,7 +64,7 @@ func MakeAPIRequest[T any](endpoint string, method string) (T, error) {
 }
 
 func MakeStreamingRequest(endpoint string, queryParams url.Values) (*http.Response, error) {
-	req, err := http.NewRequest("GET", apiUrl+endpoint, nil)
+	req, err := http.NewRequest("GET", getApiUrl()+endpoint, nil)
 	if err != nil {
 		return nil, err
 	}
